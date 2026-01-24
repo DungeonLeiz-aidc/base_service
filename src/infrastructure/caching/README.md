@@ -1,6 +1,6 @@
 # ⚡ Caching & Distribution - Tối ưu Hiệu năng / Performance & Scale
 
-**Mục đích / Purpose**: Danh mục này tập trung vào việc sử dụng Redis để tăng tốc độ truy cập dữ liệu và cơ chế Khóa phân tán (Distributed Lock). Đây là thành phần then chốt để giải quyết bài toán Concurrency (Tranh chấp tài nguyên). / This directory focuses on using Redis for data acceleration and Distributed Locking—a critical component for solving resource contention (Concurrency).
+**Mục đích / Purpose**: Sử dụng bộ nhớ RAM (Redis) để tăng tốc độ truy cập dữ liệu và dùng Khóa phân tán để giải quyết tranh chấp tài nguyên trong môi trường đa máy chủ. / Leverages RAM (Redis) for data acceleration and Distributed Locking to resolve resource contention in multi-server environments.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,38 +8,44 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Bối cảnh & Tư duy (Context & Why)
-- **Context**: Trong hệ thống thương mại điện tử, hàng nghìn người có thể cùng mua một món hàng. Nếu chỉ dùng Database, việc kiểm tra tồn kho sẽ rất chậm và dễ bị lỗi tranh chấp (Race Condition).
-- **Why Distributed Lock?**: Chúng ta dùng Redis Lock để đảm bảo tại một thời điểm, chỉ có một luồng xử lý được quyền "giữ" hàng cho khách, ngăn chặn tuyệt đối tình trạng Bán quá số lượng (Overselling).
+### 🎯 Nhiệm vụ cốt lõi (Core Responsibilities)
+1. **Tăng tốc Truy cập**: Giảm độ trễ bằng cách lưu trữ dữ liệu nóng trên RAM.
+2. **Giải quyết Tranh chấp**: Dùng Distributed Lock để ngăn Race Condition (Vd: tránh overselling).
+3. **Đảm bảo Nhất quán**: Quản lý vòng đời dữ liệu cache qua chính sách TTL.
+4. **Giảm tải Database**: Chặn bớt các truy vấn lặp đi lặp lại vào database chính.
+5. **Tính nguyên tử**: Thực hiện các phép toán "Check-then-Set" một cách an toàn.
 
-### ⚠️ Ràng buộc & Cấu trúc (CCE Template)
-- **Constraints**: 
-    1. **TTL (Time-To-Live)**: Mọi Lock phải có thời hạn tự động giải phóng (default: 30s) để tránh treo hệ thống (Deadlock).
-    2. **Atomic Operation**: Việc kiểm tra tồn kho và trừ kho phải là một hoạt động nguyên tử trong Lock.
-- **Workflow**: 
-    1. Yêu cầu Lock theo `product_id`.
-    2. Nếu có Lock: Kiểm tra Redis Cache -> Trừ kho ảo -> Trả kết quả.
-    3. Giải phóng Lock sớm nhất có thể.
+### 💡 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Hệ thống đặt hàng luôn phải đối mặt với bài toán hàng ngàn người cùng mua 1 món hàng cuối cùng. Database truyền thống thường quá chậm để xử lý khóa (locking) ở quy mô này.
+- **Why Redis?**: Redis nổi tiếng với tốc độ xử lý hàng triệu request/giây và hỗ trợ các phép toán Atomic cực mạnh cho việc quản lý kho (Inventory).
+
+### ⚠️ Quy trình & Ràng buộc (CCE Template)
+- **TTL bắt buộc**: Mọi dữ liệu vào cache đều phải có thời gian hết hạn (Time-To-Live).
+- **Graceful Degradation**: Ứng dụng phải vẫn chạy được (dù chậm hơn) nếu Redis gặp sự cố (Cache bypass).
+- **Lock Safety**: Luôn sử dụng `try-finally` để đảm bảo Khóa (Lock) luôn được giải phóng.
 
 ### 🏛️ Ví dụ thực tế (Examples)
-- **InventoryLock**: [Redis implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) thực hiện việc giữ hàng trong 30 giây khi khách đang thanh toán.
+- **Inventory Cache**: [redis_inventory_cache.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) thực hiện khóa để trừ kho.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Context & Rationale
-- **Context**: In high-traffic e-commerce, thousands of concurrent users might target the same item. Relying solely on a Relational Database for stock checks is slow and vulnerable to Race Conditions.
-- **Why Distributed Lock?**: Redis Locks ensure only one execution thread "reserves" stock at any time, eliminating the risk of Overselling.
+### 🎯 Core Responsibilities
+1. **Performance Acceleration**: Lowers latency by serving high-frequency data from RAM.
+2. **Conflict Resolution**: Uses Distributed Locking to prevent Race Conditions (e.g., overselling).
+3. **Consistency Management**: Controls cache data freshness via strict TTL policies.
+4. **Primary DB Shielding**: Intercepts repetitive read traffic to protect the main Database.
+5. **Atomic Operations**: Safely executes critical "Check-then-Set" sequences.
 
-### ⚠️ Constraints & Workflow
-- **Constraints**: 
-    1. **TTL (Time-To-Live)**: All locks must have an expiration (default: 30s) to prevent permanent deadlocks if a server crashes.
-    2. **Atomic Operation**: Inventory checks and deductions must remain atomic within the lock context.
-- **Workflow**: 
-    1. Request Lock using `product_id`.
-    2. If Acquired: Check Redis Cache -> Deduct virtual stock -> Return result.
-    3. Release Lock ASAP.
+### 💡 Context & Why
+- **Context**: Heavy traffic systems must handle concurrent stock deductions. Traditional DB locking is often too slow for peak-load demands.
+- **Why Redis?**: Renowned for million-request-per-second speeds and powerful atomic primitives essential for robust inventory management.
+
+### ⚠️ Process & Constraints (CCE Template)
+- **Mandatory TTL**: Every cached item must include an expiration policy.
+- **Graceful Degradation**: The core app must survive (even at lower speeds) if Redis is unavailable.
+- **Lock Safety**: Utilize `try-finally` patterns to guarantee lock release in all scenarios.
 
 ### 🏛️ Practical Examples
-- **InventoryLock**: [Redis implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) reserves stock for 30s during the checkout lifecycle.
+- **Inventory Cache**: [redis_inventory_cache.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) for thread-safe stock deduction.

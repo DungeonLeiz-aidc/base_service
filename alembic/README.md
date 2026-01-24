@@ -1,6 +1,6 @@
 # 🏗️ Alembic - Hệ thống Quản trị Phiên bản DB / Advanced Database Migration Tooling
 
-**Mục đích / Purpose**: Alembic không chỉ là một công cụ chạy lệnh; nó là một hệ sinh thái giúp đồng bộ hóa trạng thái giữa mã nguồn (SQLAlchemy Models) và cơ sở dữ liệu thực tế. Thư mục này chứa toàn bộ cấu hình điều khiển "Cỗ máy thời gian" của dữ liệu. / Alembic is more than a CLI tool; it is an ecosystem that synchronizes state between source code (SQLAlchemy Models) and the live database. This directory contains the control configuration for the data "Time Machine".
+**Mục đích / Purpose**: Alembic giúp đồng bộ hóa trạng thái giữa mã nguồn (SQLAlchemy Models) và cơ sở dữ liệu thực tế một cách an toàn và có thể đảo ngược. / Alembic ensures safe, reversible state synchronization between source code (SQLAlchemy Models) and the live database.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,40 +8,60 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Bối cảnh & Thành phần (Context & Components)
-- **alembic.ini**: Tập tin cấu hình gốc (nằm ở thư mục gốc dự án). Nó định nghĩa đường dẫn đến các script migration và các cài đặt về logging.
-- **env.py**: "Trái tim" của quá trình thực thi. Đây là script Python nạp cấu hình từ SQLAlchemy engine và metadata của Domain để so sánh sự thay đổi.
-- **script.py.mako**: "Bản thiết kế" (Template) cho các file migration mới.
+### 🎯 Nhiệm vụ cốt lõi (Core Responsibilities)
+1. **Theo vết Phiên bản Schema**: Lưu giữ dòng thời gian các thay đổi cấu trúc tương tự như Git.
+2. **Audit Log Dữ liệu**: Ghi lại lịch sử ai đã đổi gì, khi nào, phục vụ truy vết.
+3. **Tự động hóa Tiến hóa**: Tự động phát hiện thay đổi trong Models để sinh mã migration.
+4. **Chuẩn hóa File Migration**: Đảm bảo mọi bản ghi migration có cấu trúc đồng nhất qua file `.mako`.
+5. **Đồng bộ Trạng thái**: Đảm bảo mã nguồn Python và cấu trúc DB thực tế luôn khớp nhau 100%.
 
-### 💡 Tại sao cần `script.py.mako`? (The Template Why)
-- **Tính nhất quán**: Đảm bảo mọi bản migration đều có chung một cấu trúc chuẩn (ví dụ: luôn có `upgrade()` và `downgrade()`).
-- **Customization**: Cho phép chúng ta thêm sẵn các thư viện cần thiết (như `import uuid` hay `custom_types`) vào mọi file migration được sinh ra tự động, giúp tiết kiệm thời gian và tránh lỗi quên import.
+### � Cấu trúc Thư mục (Directory Layout)
+```text
+alembic/
+├── env.py              # Script điều khiển kết nối và nạp nạp metadata.
+├── script.py.mako     # Bản thiết kế (template) cho các file migration.
+└── versions/           # Thư mục chứa nhật ký thay đổi cấu trúc DB.
+```
 
-### ⚠️ Ràng buộc & Lưu ý (Constraints)
-1. **Metadata Wiring**: Trong `env.py`, biến `target_metadata` phải trỏ đúng vào Metadata của các Models (`Base.metadata`) thì tính năng `--autogenerate` mới hoạt động.
-2. **Template Safety**: Không nên sửa các biến trong dấu `${}` của file `.mako` trừ khi bạn hiểu rõ cách Alembic truyền dữ liệu vào template.
+### �💡 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Khi làm việc nhóm, việc phối hợp thay đổi database là cực kỳ rủi ro nếu không có công cụ quản lý phiên bản.
+- **Why Alembic?**: Là tiêu chuẩn vàng cho Python/SQLAlchemy, hỗ trợ tuyệt vời cho môi trường bất đồng bộ (Async).
 
-### 🏛️ Ví dụ thực tế (Practical Examples)
-- Nếu bạn muốn mọi file migration đều tự động có lệnh logging, bạn sẽ sửa file `script.py.mako`.
-- Xem cách quản lý chuỗi migration tại: [alembic/versions/README.md](file:///home/korosaki-ryukai/Workspace/Service/base_service/alembic/versions/README.md)
+### ⚠️ Quy trình & Ràng buộc (CCE Template)
+- **SQL-Only**: Chỉ hỗ trợ các DB quan hệ. Không dùng cho NoSQL (Redis/Mongo).
+- **Review bắt buộc**: Luôn phải đọc file migration được sinh ra trước khi chạy lệnh upgrade.
+- **Immutability**: Cấm tuyệt đối việc sửa đổi file migration đã đẩy lên máy chủ thật.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **Vận hành**: `uv run alembic upgrade head` để cập nhật database.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Context & Components
-- **alembic.ini**: The root configuration file (located in the project root). It defines paths to migration scripts and logging settings.
-- **env.py**: The "Heart" of execution. This Python script loads configuration from the SQLAlchemy engine and Domain metadata to compare changes.
-- **script.py.mako**: The "Blueprint" (Template) for generating new migration files.
+### 🎯 Core Responsibilities
+1. **Schema Version Tracking**: Maintains a timeline of structural changes, similar to Git for code.
+2. **Database Audit Log**: Records change history (who/what/when) for debugging.
+3. **Evolution Automation**: Automatically detects model changes to trigger migration generation.
+4. **Migration Templating**: Guarantees consistent script format via `.mako` templates.
+5. **State Synchronization**: Ensures Python source and live DB schemas are 100% aligned.
 
-### 💡 Why `script.py.mako`?
-- **Consistency**: Ensures every migration file follows a standardized structure (e.g., always including `upgrade()` and `downgrade()`).
-- **Customization**: Allows pre-defining essential imports (like `uuid` or `custom_types`) for all autogenerated migrations, saving time and preventing manual import errors.
+### 📂 Directory Layout
+```text
+alembic/
+├── env.py              # Core script governing connections and metadata loading.
+├── script.py.mako     # Blueprint template for new migration files.
+└── versions/           # Directory storing the cumulative schema history.
+```
 
-### ⚠️ Constraints & Rationale
-1. **Metadata Wiring**: In `env.py`, the `target_metadata` variable must point correctly to the Models' Metadata (`Base.metadata`) for `--autogenerate` to function.
-2. **Template Safety**: Avoid modifying variables within `${}` in the `.mako` file unless you understand how Alembic injects data into the template.
+### 💡 Context & Why
+- **Context**: In team settings, uncoordinated database changes cause destructive application failures.
+- **Why Alembic?**: The de facto standard for SQLAlchemy, offering premier support for Async flows and automated diffing.
+
+### ⚠️ Process & Constraints (CCE Template)
+- **SQL-Only**: Exclusively for RDBMS. Not compatible with NoSQL (Redis/Mongo).
+- **Mandatory Audit**: Always inspect autogenerated scripts prior to applying updates.
+- **Immutability**: Once a script is deployed, its content must never be modified.
 
 ### 🏛️ Practical Examples
-- To automatically include logging in every new migration file, modify `script.py.mako`.
-- Learn about migration chain management: [alembic/versions/README.md](file:///home/korosaki-ryukai/Workspace/Service/base_service/alembic/versions/README.md)
+- **Ops**: `uv run alembic upgrade head` to apply pending changes.

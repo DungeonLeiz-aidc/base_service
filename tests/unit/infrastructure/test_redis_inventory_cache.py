@@ -6,7 +6,7 @@ Unit tests for RedisInventoryCache using mocks.
 
 import pytest
 from unittest.mock import AsyncMock, patch
-from src.infrastructure.clients.redis_client import RedisInventoryCache
+from src.infrastructure.caching.redis_inventory_cache import RedisInventoryCache
 from src.domain.exceptions import InventoryLockError
 
 

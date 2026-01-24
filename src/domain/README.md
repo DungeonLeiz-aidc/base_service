@@ -1,6 +1,6 @@
 # 📦 Domain Layer - Trái tim của Hệ thống / The Business Core
 
-**Mục đích / Purpose**: Tầng Domain chứa đựng các quy tắc nghiệp vụ bất biến (invariants) và logic cốt lõi. Đây là phần quý giá nhất của codebase, hoàn toàn tách biệt khỏi các yếu tố kỹ thuật. / The Domain layer encapsulates invariant business rules and core logic. It is the most valuable part of the project, strictly isolated from technical concerns.
+**Mục đích / Purpose**: Tầng Domain chứa đựng logic nghiệp vụ tinh khiết nhất (Entities, Events), là nơi quan trọng nhất để chuyển giao tri thức nghiệp vụ. / The Domain layer encapsulates pure business logic (Entities, Events) and serves as the definitive center for business knowledge transfer.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,30 +8,64 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Bối cảnh & Tư duy (Context & Why)
-- **Context**: Tại sao cần Domain riêng? Để khi bạn đổi từ SQL sang NoSQL, hay từ REST sang GraphQL, trái tim của doanh nghiệp (cách đặt hàng, cách tính giá) vẫn không hề thay đổi.
-- **Why Repository Interface?**: Chúng ta để Interface ở Domain để Domain có thể "yêu cầu" dữ liệu mà không cần biết dữ liệu đó đến từ Postgres hay một API bên thứ ba.
+### 🎯 Nhiệm vụ cốt lõi (Core Responsibilities)
+1. **Lưu trữ Logic Nghiệp vụ**: Là nơi duy nhất chứa các quy tắc tính toán và xử lý nghiệp vụ cốt lõi.
+2. **Định nghĩa Thực thể (Entities)**: Xây dựng các đối tượng có định danh và hành vi nghiệp vụ.
+3. **Xây ngữ Ngôn ngữ Chung**: Phản ánh chính xác các thuật ngữ chuyên môn vào trong mã nguồn.
+4. **Bảo vệ Tính thuần khiết**: Đảm bảo công nghệ bên ngoài CẤM xâm nhập vào lõi nghiệp vụ.
+5. **Duy trì Bất biến**: Đảm bảo các thực thể luôn ở trạng thái đúng đắn ngay từ khi khởi tạo.
 
-### ⚠️ Ràng buộc (Constraints)
-1. **Zero External Dependencies**: Tuyệt đối không import từ `infrastructure`, `application` hay bất kỳ thư viện IO nào (SQLAlchemy, FastAPI).
-2. **Persistence Ignorant**: Entities không nên biết chúng được lưu trữ như thế nào.
+### 📂 Cấu trúc Thư mục (Directory Layout)
+```text
+domain/
+├── entities/           # Đối tượng định danh và hành vi (Order, Product).
+├── events/             # Sự kiện nghiệp vụ (OrderPlaced, OrderPaid).
+├── exceptions.py       # Các ngoại lệ đặc thù của nghiệp vụ.
+└── __init__.py         # Khởi tạo mô-đun Domain.
+```
+
+### 💡 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tech stack thay đổi mỗi năm, nhưng quy trình "Đặt hàng -> Thanh toán" có thể tồn tại hàng chục năm.
+- **Why Domain Purity?**: Việc tách biệt hoàn toàn khỏi Interfaces giúp Domain trở thành vùng "Bất khả xâm phạm" về kỹ thuật, dễ dàng kiểm thử và bảo trì.
+
+### ⚠️ Quy trình & Ràng buộc (CCE Template)
+- **Zero External Dependencies**: Cấm import bất kỳ thư viện nào từ Infrastructure hay Application.
+- **Persistence Ignorant**: Domain không được biết về sự tồn tại của Database hay Network.
+- **Rich Behavior**: Logic nghiệp vụ phải nằm trong Entities, tránh tạo ra "Dumb Data Classes".
 
 ### 🏛️ Ví dụ thực tế (Examples)
-- **Entities**: [Order](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/entities/order.py) quản lý trạng thái và tính toán tổng tiền.
-- **Interfaces**: [IOrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/interfaces/repositories.py) định nghĩa các bản hợp đồng lưu trữ.
+- **Hành vi**: Một Entity `Order` tự biết cách tính tổng tiền.
+- **Events**: `OrderPlaced` sinh ra ngay khi logic đặt hàng hoàn tất.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Context & Rationale
-- **Context**: Why isolate the Domain? So that when you switch from SQL to NoSQL, or REST to GraphQL, the business heart (how to order, how to price) remains untouched.
-- **Why Repository Interface?**: We place the Interface in the Domain so the Domain can "request" data without needing to know if it comes from Postgres or an external API.
+### 🎯 Core Responsibilities
+1. **Business Logic Hosting**: Exclusive home for core calculations and processing rules.
+2. **Entity Definition**: Build objects with unique identity and rich business behavior.
+3. **Ubiquitous Language**: Mirrors domain expertise within the source code.
+4. **Logic Purity**: Strictly prohibits technical framework penetration into the core.
+5. **Invariant Enforcement**: Guarantees entities maintain a valid logical state from creation.
 
-### ⚠️ Constraints
-1. **Zero External Dependencies**: Strictly no imports from `infrastructure`, `application`, or any IO libraries (SQLAlchemy, FastAPI).
-2. **Persistence Ignorant**: Entities should not be aware of how they are stored.
+### 📂 Directory Layout
+```text
+domain/
+├── entities/           # Identity and behavior objects (Order, Product).
+├── events/             # Business state change notices (OrderPlaced).
+├── exceptions.py       # Domain-specific error types.
+└── __init__.py         # Domain module initialization.
+```
+
+### 💡 Context & Why
+- **Context**: Tech stacks evolve annually; "Order -> Payment" workflows survive decades.
+- **Why Domain Purity?**: Complete isolation from Interfaces ensures the Domain remains a technical "Sanctuary", easily testable and maintainable.
+
+### ⚠️ Process & Constraints (CCE Template)
+- **Zero External Dependencies**: Strictly prohibits imports from infrastructure or application layers.
+- **Persistence Ignorance**: Domain objects remain entirely unaware of storage or network details.
+- **Rich Behavior**: Logic must reside within Entities, avoiding "Data-only" classes.
 
 ### 🏛️ Practical Examples
-- **Entities**: [Order](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/entities/order.py) handles state transitions and totals.
-- **Interfaces**: [IOrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/interfaces/repositories.py) defines persistence contracts.
+- **Behavior**: An `Order` entity autonomously calculates its own totals.
+- **Events**: `OrderPlaced` emitted immediately upon successful core logic completion.

@@ -1,6 +1,6 @@
 # 🎓 Clean Architecture & DDD Knowledge Map (Python)
 
-**Mission / Sứ mệnh**: Dự án này là một cỗ máy hoàn chỉnh được thiết kế để học tập và triển khai Microservices chuyên nghiệp, tuân thủ nguyên tắc **Clean Architecture** và **Domain-Driven Design (DDD)**. / This project is a complete engine designed for learning and building professional Microservices, adhering to **Clean Architecture** and **Domain-Driven Design (DDD)**.
+**Mục đích / Purpose**: Dự án này là một bộ giáo trình thực tế để triển khai Microservices chuyên nghiệp, tuân thủ nguyên tắc Clean Architecture và DDD. / This project is a practical textbook for building professional Microservices using Clean Architecture and DDD principles.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,74 +8,66 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 🏛️ Sơ đồ Kiến trúc (Architecture Map)
+### 🎯 Nhiệm vụ cốt lõi (Core Responsibilities)
+1. **Tầm nhìn & Mục tiêu (Project Vision)**: Truyền tải tri thức về cách xây dựng hệ thống bền vững.
+2. **Sơ đồ Vận hành (Operational Blueprint)**: Cấu hình sẵn Makefile và Docker để chạy dự án ngay lập tức.
+3. **Bản đồ Công nghệ (Tech Stack Overview)**: Minh họa sự phối hợp giữa FastAPI, Redis, Postgres, RabbitMQ.
+4. **Tiêu chuẩn Kỹ thuật (Engineering Standards)**: Thiết lập chuẩn code 10/10 cho toàn dự án.
+5. **Chuyển giao Tri thức (Handover Guide)**: Giúp nhân sự mới nắm bắt kiến trúc chỉ trong vài phút.
 
-```mermaid
-graph TD
-    subgraph "Interface Layer (Web/CLI/Workers)"
-        API[FastAPI Routes]
-        CLI[Typer CLI]
-        WRK[RabbitMQ Worker]
-    end
-
-    subgraph "Application Layer (Use Cases)"
-        SVC[OrderPlaceService]
-        DTO[Data Transfer Objects]
-    end
-
-    subgraph "Domain Layer (Business Core)"
-        ENT[Order/Product Entities]
-        EVT[OrderPlaced Events]
-        INT[Repository Interfaces]
-    end
-
-    subgraph "Infrastructure Layer (Technical Detail)"
-        DB[PostgreSQL/SQLAlchemy]
-        RD[Redis/Distributed Lock]
-        RMQ[RabbitMQ/Publisher]
-    end
-
-    API --> SVC
-    CLI --> SVC
-    WRK --> SVC
-    SVC --> ENT
-    SVC --> INT
-    INT --> DB
-    SVC --> RD
-    SVC --> RMQ
+### 📂 Cấu trúc Thư mục (Directory Layout)
+```text
+.
+├── src/                # Mã nguồn chính (Domain, App, Infra, Interface).
+├── tests/              # Hệ thống kiểm thử toàn diện (Unit, Integration).
+├── alembic/            # Quản lý phiên bản Database (Migrations).
+├── configs/            # Cấu hình tập trung (Service, Clients, LLM).
+├── logs/               # Nhật ký vận hành và audit bảo mật.
+└── scripts/            # Các công cụ hỗ trợ và dữ liệu mẫu (Seed).
 ```
 
-### 📄 Bối cảnh & Tư duy (Context & Why)
-- **Context**: Tại sao phải phức tạp như vậy? Trong các hệ thống lớn, việc thay đổi Database hay API framework là chuyện thường ngày. Nếu code nghiệp vụ bị trộn lẫn, hệ thống sẽ sụp đổ khi thay đổi.
-- **Constraints**: 
-    1. **Dependency Rule**: Tầng bên trong không bao giờ được biết về tầng bên ngoài.
-    2. **Pure Domain**: Domain không được chứa bất kỳ mã IO hay framework nào (không SQLAlchemy, không FastAPI).
+### 💡 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tech stack luôn thay đổi, nghiệp vụ thì bền vững hơn. Cần tách biệt chúng.
+- **Why Clean Architecture?**: Bảo vệ logic kinh doanh khỏi sự lỗi thời của công nghệ ngoại vi.
 
-### 🚀 Điểm nhấn Kỹ thuật (Engineering Highlights)
-- **PII Masking**: Tự động che giấu dữ liệu nhạy cảm (Email, ID) trong logs hệ thống.
-- **Circuit Breaker**: Bảo vệ hệ thống khi dịch vụ thanh toán bên ngoài (Stripe) gặp sự cố.
-- **Async Efficiency**: Toàn bộ luồng từ API -> Service -> DB đều chạy Bất đồng bộ (Async).
+### ⚠️ Quy trình & Ràng buộc (CCE Template)
+- **Dependency Rule**: Tầng trong không phụ thuộc tầng ngoài.
+- **Domain Purity**: Cấm mã kỹ thuật (IO/DB) xâm nhập vào Domain.
+- **Self-Validation**: Thực thể phải tự bảo vệ tính hợp lệ.
 
-### 📖 Hướng dẫn Mở rộng (Scaling Guide)
-Xem chi tiết tại: [EXTENSIBILITY.md](file:///home/korosaki-ryukai/Workspace/Service/base_service/docs/EXTENSIBILITY.md)
+### 🏛️ Ví dụ thực tế (Examples)
+- **Vận hành**: `make run` để khởi động stack hoàn chỉnh.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 🏛️ Architecture Map
-(See Mermaid diagram above)
+### 🎯 Core Responsibilities
+1. **Project Vision**: Philosophy of building scalable enterprise systems.
+2. **Operational Blueprint**: Pre-configured environment for instant execution.
+3. **Tech Stack Overview**: Synergy between FastAPI, Redis, Postgres, and RabbitMQ.
+4. **Engineering Standards**: Establishing 10/10 code quality benchmarks.
+5. **Knowledge Handover**: Entry point for rapid architectural onboarding.
 
-### 📄 Context & Constraints
-- **Context**: Why this complexity? In enterprise systems, switching databases or API frameworks is common. If business logic is entangled with tech, the system breaks during transitions.
-- **Constraints**: 
-    1. **Dependency Rule**: Inner layers never depend on outer layers.
-    2. **Pure Domain**: The Domain must remain free of IO or framework libraries (no SQLAlchemy, no FastAPI).
+### 📂 Directory Layout
+```text
+.
+├── src/                # Core logic (Domain, App, Infra, Interface).
+├── tests/              # Multi-layered test suite (Unit, Integration).
+├── alembic/            # Schema versioning and migration logs.
+├── configs/            # Central settings (Service, Clients, LLM).
+├── logs/               # Operational tracking and security audits.
+└── scripts/            # Utility tools and initial seed data.
+```
 
-### 🚀 Engineering Highlights
-- **PII Masking**: Automatically redacts sensitive data (Emails, IDs) in system logs.
-- **Circuit Breaker**: Protects system stability when external services (Stripe) fail.
-- **Async Efficiency**: Pure async flow across API, Services, and Infrastructure.
+### 💡 Context & Why
+- **Context**: Tech is volatile; business models are persistent. Hexagonal design keeps the core stable.
+- **Why Clean Architecture?**: Decouples high-value rules from low-level implementation details.
 
-### 📖 Extensibility Guide
-Read more: [EXTENSIBILITY.md](file:///home/korosaki-ryukai/Workspace/Service/base_service/docs/EXTENSIBILITY.md)
+### ⚠️ Process & Constraints (CCE Template)
+- **Dependency Direction**: Outer layers depend on inner ones, never vice versa.
+- **Logic Purity**: Zero framework/IO libraries allowed in the Domain.
+- **Integrity**: Domain objects must enforce their own logical invariants.
+
+### 🏛️ Practical Examples
+- **Ops**: `make run` to spin up the entire ecosystem.

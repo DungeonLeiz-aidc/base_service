@@ -13,7 +13,7 @@ from sqlalchemy.orm import selectinload
 from loguru import logger
 
 from src.domain.entities import Order, OrderItem, OrderStatus
-from src.domain.interfaces.repositories import IOrderRepository
+from src.interface.protocols.repositories import IOrderRepository
 from src.infrastructure.models import OrderModel, OrderItemModel
 
 

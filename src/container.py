@@ -11,8 +11,8 @@ from redis import asyncio as aioredis
 from loguru import logger
 
 from src.infrastructure.repositories import ProductRepository, OrderRepository
-from src.infrastructure.clients.redis_client import RedisInventoryCache
-from src.infrastructure.clients.rabbitmq_client import RabbitMQPublisher
+from src.infrastructure.caching.redis_inventory_cache import RedisInventoryCache
+from src.infrastructure.messaging.rabbitmq_publisher import RabbitMQPublisher
 from src.application.service import PlaceOrderService
 from configs.service_config import settings
 

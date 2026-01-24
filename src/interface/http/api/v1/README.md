@@ -1,6 +1,6 @@
-# 🥇 API v1 - Phiên bản Đầu tiên / Initial API Version
+# 🛣️ API Routing & v1 - Thiết kế RESTful / Professional API Design
 
-**Mục đích / Purpose**: Danh mục `v1/` chứa các triển khai cụ thể cho phiên bản API đầu tiên của hệ thống. Đây là nơi tập trung các logic về Endpoint, Schema và logic xử lý Request/Response cho người dùng. / The `v1/` directory contains specific implementations for the system's first API version, focusing on Endpoints, Schemas, and Request/Response handling.
+**Mục đích / Purpose**: Danh mục này định nghĩa sơ đồ đường đi của các yêu cầu HTTP cho phiên bản v1, tuân thủ nghiêm ngặt các tiêu chuẩn RESTful quốc tế. / Defines HTTP routing for API version 1, strictly adhering to global RESTful design standards.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,24 +8,44 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Stability Guarantee**: Một khi API v1 đã được công khai, chúng ta cam kết không thay đổi cấu trúc dữ liệu để tránh làm lỗi Client. Nếu muốn thay đổi lớn, chúng ta sẽ tạo `v2`.
-- **Granular Schemas**: Ở đây chúng ta sử dụng các Pydantic Schemas rất chi tiết để đảm bảo dữ liệu khách gửi lên là hoàn hảo (ví dụ: SKU không được trống).
-- **Service Injection**: Tầng này sẽ "nhờ" các Application Services thực hiện công việc nặng nhọc, nó chỉ lo việc nhận và trả dữ liệu.
+### 🎯 Nhiệm vụ cốt lõi (Core Responsibilities)
+1. **Phơi bày Hợp đồng**: Mở các cổng HTTP để thế giới bên ngoài tương tác với nghiệp vụ.
+2. **Điều hướng Yêu cầu**: Ánh xạ URL và phương thức (GET, POST...) tới hàm xử lý.
+3. **Quản lý Phiên bản**: Phân tách v1 để không làm hỏng các ứng dụng khách cũ.
+4. **Cung cấp Tài liệu**: Là nguồn dữ liệu chính cho hệ thống Swagger/OpenAPI.
+5. **Dịch giao thức**: Chuyển đổi JSON thành đối tượng Python và ngược lại.
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong dự án này:
-- `orders.py`: Định nghĩa các endpoint `/api/v1/orders`. Nó nhận input, validate bằng Pydantic, gọi `PlaceOrderService` và trả về JSON chuẩn.
+### 💡 Bối cảnh & Tư duy (Context & Why)
+- **Context**: API là bộ mặt của hệ thống. Nếu API lộn xộn, các lập trình viên Frontend sẽ rất khó tích hợp.
+- **Why RESTful?**: Là ngôn ngữ chung của Internet. Sử dụng Danh từ cho tài nguyên (Vd: `/orders`) giúp API trở nên dễ hiểu và mang tính dự đoán cao.
+
+### ⚠️ Quy trình & Ràng buộc (CCE Template)
+- **Nouns, not Verbs**: Sử dụng `/orders` thay vì `/getOrders`.
+- **Status Codes**: Luôn trả về đúng mã trạng thái (201 cho Create, 400 cho Bad Request, 404 cho Not Found).
+- **Immutability**: Khi API v1 đã public, không bao giờ được thay đổi cấu trúc của nó (breaking changes).
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **Endpoints**: [order_router.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/api/v1/order_router.py) định nghĩa các luồng xử lý đơn hàng.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Stability Guarantee**: Once API v1 is public, we commit to maintaining its data structure to avoid breaking clients. Major changes would necessitate a `v2`.
-- **Granular Schemas**: We use detailed Pydantic Schemas here to ensure incoming data is perfect (e.g., SKU must not be empty).
-- **Service Injection**: This layer delegates heavy lifting to Application Services, focusing solely on data ingestion and response delivery.
+### 🎯 Core Responsibilities
+1. **Contract Exposure**: Opens HTTP gateways for external interaction with business services.
+2. **Request Routing**: Precision mapping of URLs and Methods to internal handlers.
+3. **Versioning**: Maintains v1 isolation to protect legacy client integrations.
+4. **Documentation**: Serves as the primary source for interactive Swagger/OpenAPI docs.
+5. **Protocol Translation**: Seamlessly bridges JSON payloads and Python structures.
 
-### 🏛️ Practical Example
-In this project:
-- `orders.py`: Defines the `/api/v1/orders` endpoints. It ingest input, validates via Pydantic, invokes `PlaceOrderService`, and returns standardized JSON.
+### 💡 Context & Why
+- **Context**: The API is the system's external face. Messy endpoints frustrate frontend developers and slow down integration.
+- **Why RESTful?**: The lingua franca of the web. Using Nouns for resources (e.g., `/orders`) makes the API intuitive and predictable.
+
+### ⚠️ Process & Constraints (CCE Template)
+- **Noun Focus**: Prioritize `/orders` over action-based paths like `/createOrder`.
+- **Semantic Status Codes**: Return 201 for success creation, 400 for structural errors, and 404 for missing items.
+- **Immunity**: Once v1 is public, structural breaking changes are strictly prohibited.
+
+### 🏛️ Practical Examples
+- **Endpoints**: [order_router.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/api/v1/order_router.py) managing the order lifecycle endpoints.

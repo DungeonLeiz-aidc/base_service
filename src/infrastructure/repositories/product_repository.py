@@ -12,7 +12,7 @@ from sqlalchemy import select
 from loguru import logger
 
 from src.domain.entities import Product
-from src.domain.interfaces.repositories import IProductRepository
+from src.interface.protocols.repositories import IProductRepository
 from src.infrastructure.models import ProductModel
 
 

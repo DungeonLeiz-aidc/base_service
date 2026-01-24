@@ -1,6 +1,6 @@
 # 🏗️ Infrastructure Layer - Chi tiết Kỹ thuật / Technical Implementation
 
-**Mục đích / Purpose**: Tầng Infrastructure là nơi hiện thực hóa các "bản hợp đồng" từ Domain. Nó chứa mã nguồn liên quan đến Database, Cache, Messaging và các dịch vụ bên thứ ba. / The Infrastructure layer provides the concrete implementation of Domain contracts. It contains all code related to Databases, Caching, Messaging, and third-party services.
+**Mục đích / Purpose**: Tầng Infrastructure hiện thực hóa các "bản hợp đồng" từ Domain, quản lý mọi kết nối ra thế giới bên ngoài (DB, Cache, Network). / The Infrastructure layer implements Domain contracts, managing all external connections (DB, Cache, Network).
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,30 +8,68 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Bối cảnh & Tư duy (Context & Why)
-- **Context**: Tại sao lại để Database ở ngoài cùng? Để logic nghiệp vụ không bị phụ thuộc vào SqlAlchemy hay Redis. Khi cần thay đổi thư viện, bạn chỉ cần sửa ở tầng này.
-- **Why Mapping?**: Đây là nơi chúng ta thực hiện việc "ánh xạ" (Mapping) từ các Model của Database (vốn có nhiều ràng buộc kỹ thuật) sang các Entity của Domain (vốn chỉ quan tâm đến nghiệp vụ).
+### 🎯 Nhiệm vụ cốt lõi (Core Responsibilities)
+1. **Hiện thực hóa Hợp đồng**: Triển khai mã nguồn thực tế cho các Interface đã định nghĩa tại Domain.
+2. **Cách ly Công nghệ**: Ngăn chặn thư viện bên thứ ba làm "ô nhiễm" mã nguồn nghiệp vụ.
+3. **Xây dựng Tính bền vững**: Thiết lập các cơ chế bảo vệ hệ thống như Retry và Circuit Breaker.
+4. **Quản lý Tài nguyên**: Tối ưu hóa việc sử dụng kết nối (Pool) và bộ nhớ cho dịch vụ ngoại vi.
+5. **Ánh xạ Dữ liệu**: Chuyển đổi dữ liệu từ định dạng kỹ thuật sang đối tượng Domain và ngược lại.
 
-### ⚠️ Ràng buộc (Constraints)
-1. **Implementation-Focused**: Tầng này chỉ chứa mã thực thi các Interface đã định nghĩa ở Domain.
-2. **Framework Boundary**: Đây là nơi duy nhất được phép chứa các thư viện nặng về IO (SQLAlchemy, Redis-py, Aio-pika).
+### 📂 Cấu trúc Thư mục (Directory Layout)
+```text
+infrastructure/
+├── models/             # Cấu trúc bảng DB vật lý (SQLAlchemy).
+├── repositories/       # Triển khai các bộ sưu tập dữ liệu (Postgres).
+├── caching/            # Tăng tốc và khóa phân tán (Redis).
+├── messaging/          # Giao tiếp bất đồng bộ (RabbitMQ).
+├── clients/            # Kết nối dịch vụ bên thứ ba (Stripe, Email).
+└── migrations/         # Cấu hình "dây dợ" cho việc tiến hóa database.
+```
+
+### 💡 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Nghiệp vụ (Domain) không nên quan tâm bạn dùng Postgres hay MySQL. Những chi tiết này nên được giấu kỹ ở tầng Infrastructure.
+- **Why Hexagonal Architecture?**: Giúp dễ dàng thay thế "linh kiện" kỹ thuật. Bạn có thể đổi từ RabbitMQ sang Kafka mà không cần chạm vào lõi nghiệp vụ.
+
+### ⚠️ Quy trình & Ràng buộc (CCE Template)
+- **Không nghiệp vụ**: Tuyệt đối không đưa logic quyết định nghiệp vụ vào đây.
+- **Dependency Only**: Chỉ được phụ thuộc vào Domain và Application layer.
+- **Async First**: Ưu tiên xử lý bất đồng bộ để đạt hiệu năng tối đa.
 
 ### 🏛️ Ví dụ thực tế (Examples)
-- **Repositories**: [OrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/order_repository.py) sử dụng SQLAlchemy.
-- **Clients**: [RedisInventoryCache](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) xử lý Distributed Locking.
+- **Repositories**: [Data persistence](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/README.md).
+- **Messaging**: [RabbitMQ Publisher](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/messaging/README.md).
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Context & Rationale
-- **Context**: Why keep the Database on the outermost layer? To prevent business logic from depending on SQLAlchemy or Redis. When libraries change, modifications are localized here.
-- **Why Mapping?**: This is where we perform "Mapping" between Database Models (with technical constraints) and Domain Entities (focused solely on business).
+### 🎯 Core Responsibilities
+1. **Contract Implementation**: Provides concrete source code for Domain-defined Interfaces.
+2. **Framework Isolation**: Prevents technical libraries from "polluting" business logic.
+3. **Resilience Engineering**: Implements system protections like Retry and Circuit Breaker logic.
+4. **Resource Management**: Optimizes connection pooling and memory for external services.
+5. **Data Mapping**: Translates between technical records and rich Domain objects.
 
-### ⚠️ Constraints
-1. **Implementation-Focused**: This layer only implements Interfaces defined in the Domain.
-2. **Framework Boundary**: This is the only place allowed to contain IO-heavy libraries (SQLAlchemy, Redis-py, Aio-pika).
+### 📂 Directory Layout
+```text
+infrastructure/
+├── models/             # Physical database schemas (SQLAlchemy).
+├── repositories/       # Concrete data collection implementations (Postgres).
+├── caching/            # Acceleration and distributed locking (Redis).
+├── messaging/          # Asynchronous communication (RabbitMQ).
+├── clients/            # Third-party integration clients (Stripe, Email).
+└── migrations/         # Wiring logic for database schema evolution.
+```
+
+### 💡 Context & Why
+- **Context**: Business logic (the Domain) should remain agnostic of specific database or broker choices.
+- **Why Hexagonal Architecture?**: Facilitates seamless "component swapping", enabling tech stack migrations without core business disruption.
+
+### ⚠️ Process & Constraints (CCE Template)
+- **No Business Logic**: Never make business-critical decisions within this layer.
+- **Directional Dependency**: Only allow dependencies pointing towards the Domain or Application layers.
+- **Async First**: Prioritize asynchronous I/O for peak performance results.
 
 ### 🏛️ Practical Examples
-- **Repositories**: [OrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/order_repository.py) uses SQLAlchemy.
-- **Clients**: [RedisInventoryCache](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) handles Distributed Locking.
+- **Repositories**: [Data persistence](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/README.md).
+- **Messaging**: [RabbitMQ implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/messaging/README.md).

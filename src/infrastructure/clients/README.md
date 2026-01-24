@@ -1,6 +1,6 @@
-# 🗃️ External Clients - Cổng kết nối Ngoại vi / Service Adapters
+# 🔌 External Clients - Kết nối Ngoại vi / Service Integration
 
-**Mục đích / Purpose**: Thư mục này chứa các "Adapter" để kết nối hệ thống với các dịch vụ bên thứ ba (Redis, RabbitMQ, Payment Gateways). Mỗi client giúp chuyển đổi giao thức của bên ngoài thành ngôn ngữ mà ứng dụng của chúng ta hiểu được. / This directory contains "Adapters" that connect the system to third-party services (Redis, RabbitMQ, Payment Gateways). Each client translates external protocols into the language our application understands.
+**Mục đích / Purpose**: Quản lý việc giao tiếp với các dịch vụ bên thứ ba (Stripe, Mail API, v.v.), đảm bảo các kết nối ra ngoài luôn an toàn và bền vững. / Manages communication with third-party services (Stripe, Mail APIs, etc.), ensuring all external connections remain secure and resilient.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,22 +8,44 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Adapter Pattern**: Thay vì dùng trực tiếp thư viện `redis-py` hay `aio-pika` trong Use Case, chúng ta bao bọc chúng lại. Điều này giúp ta dễ dàng thay đổi thư viện hoặc mock dữ liệu khi test.
-- **Sự độc lập**: Tầng Application chỉ cần gọi `event_publisher.publish()` mà không quan tâm nó dùng RabbitMQ, Kafka hay AWS SQS.
+### 🎯 Nhiệm vụ cốt lõi (Core Responsibilities)
+1. **Trừu tượng hóa Giao thức**: Che giấu sự phức tạp của HTTP/SDK bên dưới các hàm Python.
+2. **Chuẩn hóa Giao tiếp**: Áp dụng chung quy tắc về Timeout và Header bảo mật.
+3. **Lá chắn Bảo vệ**: Tích hợp Circuit Breaker để ngắt kết nối khi dịch vụ ngoài bị lỗi.
+4. **Quản lý Định danh**: Tự động xử lý API Key và Bearer Tokens một cách an toàn.
+5. **Tối ưu Tài nguyên**: Duy trì kết nối sẵn sàng (Connection Pooling) để tăng tốc độ.
 
-### 🏛️ Ví dụ thực tế (Example)
-- `redis_client.py`: Quản lý kết nối và thực hiện các thao tác Distributed Locking cho kho hàng.
-- `rabbitmq_client.py`: Đảm nhận việc gửi tin nhắn ra các queue bất đồng bộ.
+### 💡 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Các dịch vụ bên ngoài (như cổng thanh toán) là thứ chúng ta không kiểm soát được. Chúng có thể sập hoặc phản hồi chậm bất cứ lúc nào.
+- **Why Resilience Patterns?**: Chúng ta tích hợp Circuit Breaker để đảm bảo rằng nếu Stripe sập, hệ thống của ta không bị "treo" theo khi cố gắng chờ đợi vô ích.
+
+### ⚠️ Quy trình & Ràng buộc (CCE Template)
+- **Timeout bắt buộc**: Không bao giờ được phép thực hiện một cuộc gọi mạng mà không có thời hạn trả lời (Timeout).
+- **Log Masking**: Thông tin nhạy cảm (API Keys) tuyệt đối không được xuất hiện trong nhật ký.
+- **Interface Driven**: Phải tuân thủ theo hợp đồng đã định nghĩa tại Domain Layer.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **Stripe Client**: [payment_client.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/clients/payment_client.py) với mẫu Circuit Breaker cơ bản.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Adapter Pattern**: Instead of using libraries like `redis-py` or `aio-pika` directly in Use Cases, we wrap them. This makes it easy to switch libraries or mock data during testing.
-- **Independence**: The Application layer simply calls `event_publisher.publish()` without caring whether it uses RabbitMQ, Kafka, or AWS SQS.
+### 🎯 Core Responsibilities
+1. **Protocol Abstraction**: Encapsulates HTTP/SDK complexities within clean Python methods.
+2. **Communication Standards**: Enforces unified Timeout and Security Header policies.
+3. **System Protection**: Integrates Circuit Breakers to stop calls to failing external services.
+4. **Identity Management**: Safely manages API Keys and Bearer Tokens.
+5. **Resource Efficiency**: Leverages Connection Pooling for rapid request handling.
 
-### 🏛️ Practical Example
-- `redis_client.py`: Manages connections and performs Distributed Locking operations for inventory.
-- `rabbitmq_client.py`: Handles sending messages to asynchronous queues.
+### 💡 Context & Why
+- **Context**: External services are outside our direct control; they can fail or lag unpredictably.
+- **Why Resilience Patterns?**: Circuit Breakers ensure that a failure in a third-party (like Stripe) doesn't cascade and crash our own internal workers.
+
+### ⚠️ Process & Constraints (CCE Template)
+- **Mandatory Timeouts**: Networking calls must never be executed without a defined response window.
+- **Log Masking**: Sensitive keys and secrets must never leak into system logs.
+- **Interface Loyalty**: Direct implementations must honor contracts defined at the Domain layer.
+
+### 🏛️ Practical Examples
+- **Stripe Client**: [payment_client.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/clients/payment_client.py) featuring the Circuit Breaker pattern.

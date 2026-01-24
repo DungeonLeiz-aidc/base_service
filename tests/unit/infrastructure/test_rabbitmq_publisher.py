@@ -6,7 +6,7 @@ Unit tests for RabbitMQPublisher using mocks.
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from src.infrastructure.clients.rabbitmq_client import RabbitMQPublisher
+from src.infrastructure.messaging.rabbitmq_publisher import RabbitMQPublisher
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ class TestRabbitMQPublisher:
         with pytest.raises(RuntimeError, match="Publisher not connected"):
             await publisher.publish(mock_event)
 
-    @patch("src.infrastructure.clients.rabbitmq_client.connect")
+    @patch("src.infrastructure.messaging.rabbitmq_publisher.connect")
     async def test_connect(self, mock_connect):
         # Arrange
         mock_conn = AsyncMock()

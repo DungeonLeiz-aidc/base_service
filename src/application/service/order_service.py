@@ -18,29 +18,10 @@ from src.domain.exceptions import (
     OrderValidationError,
 )
 from src.application.dtos import PlaceOrderRequestDTO, OrderResponseDTO
-from src.domain.interfaces.repositories import IProductRepository, IOrderRepository
+from src.interface.protocols.repositories import IProductRepository, IOrderRepository
+from src.interface.protocols.infrastructure import IInventoryCache, IEventPublisher
 
 
-class IInventoryCache(Protocol):
-    """Protocol for inventory caching service."""
-    
-    async def check_and_reserve_stock(
-        self, product_id: int, quantity: int
-    ) -> bool:
-        """Check stock availability and reserve if available."""
-        ...
-    
-    async def release_stock(self, product_id: int, quantity: int) -> None:
-        """Release reserved stock."""
-        ...
-
-
-class IEventPublisher(Protocol):
-    """Protocol for event publishing service."""
-    
-    async def publish(self, event) -> None:
-        """Publish domain event."""
-        ...
 
 
 class PlaceOrderService:
