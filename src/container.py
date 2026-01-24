@@ -13,7 +13,8 @@ from loguru import logger
 from src.infrastructure.repositories import ProductRepository, OrderRepository
 from src.infrastructure.caching.redis_inventory_cache import RedisInventoryCache
 from src.infrastructure.messaging.rabbitmq_publisher import RabbitMQPublisher
-from src.application.service import PlaceOrderService
+from src.infrastructure.clients.auth_provider import JWTAuthProvider
+from src.application.service import PlaceOrderService, SeedService
 from configs.service_config import settings
 
 
@@ -46,6 +47,11 @@ class AppContainer:
         # Infrastructure Clients
         self.inventory_cache = RedisInventoryCache(self.redis)
         self.event_publisher = RabbitMQPublisher(settings.RABBITMQ_URL)
+        self.auth_provider = JWTAuthProvider(
+            secret_key=settings.SECRET_KEY,
+            algorithm=settings.ALGORITHM,
+            access_token_expire_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
         
     @classmethod
     def get_instance(cls) -> "AppContainer":
@@ -67,6 +73,46 @@ class AppContainer:
             inventory_cache=self.inventory_cache,
             event_publisher=self.event_publisher,
         )
+    
+    def seed_service(self, session: AsyncSession) -> SeedService:
+        """Get an instance of SeedService."""
+        return SeedService(
+            product_repository=self.product_repository(session)
+        )
+
+    async def dispose(self) -> None:
+        """
+        Dispose of all persistent resources.
+        Closes Database engines, Redis connection pools, and Message Brokers.
+        Ensures loggers are completed and cleared to prevent semaphore leaks.
+        """
+        logger.info("AUDIT | START | DISPOSAL | Cleaning system resources...")
+        
+        try:
+            # 1. Close PostgreSQL connections
+            await self.engine.dispose()
+            logger.debug("AUDIT | DISPOSAL | PostgreSQL engine disposed.")
+            
+            # 2. Close Redis connections
+            await self.redis.close()
+            # Explicitly disconnect the pool for Perfectionist integrity
+            await self.redis.connection_pool.disconnect()
+            logger.debug("AUDIT | DISPOSAL | Redis client and pool closed.")
+            
+            # 3. Close RabbitMQ connection
+            try:
+                await self.event_publisher.close()
+                logger.debug("AUDIT | DISPOSAL | RabbitMQ connection closed.")
+            except Exception as e:
+                logger.warning(f"AUDIT | DISPOSAL | RabbitMQ close failed: {e}")
+
+            # 4. Final step: Clear loggers to stop enqueue threads/processes (Fixes semaphore leaks)
+            logger.info("AUDIT | SUCCESS | DISPOSAL | Resources cleared. Shutting down logging...")
+            logger.remove()
+            
+        except Exception as e:
+            # Last ditch effort for logging if logger not yet removed
+            sys.stderr.write(f"AUDIT | CRITICAL | DISPOSAL FAILED: {str(e)}\n")
 
 
 _container: Optional[AppContainer] = None

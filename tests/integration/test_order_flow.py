@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import StaticPool
 
 from src.main import app
-from src.dependencies import get_session, get_place_order_service
+from src.dependencies import get_session, get_place_order_service, get_auth_payload
 from src.infrastructure.models.product_model import Base as ProductBase, ProductModel
 from src.infrastructure.models.order_model import Base as OrderBase
 from src.container import get_container
@@ -40,8 +40,9 @@ async def test_db_session():
 
 @pytest_asyncio.fixture
 async def async_client(test_db_session):
-    # Override get_session to use our test DB
+    # Override dependencies
     app.dependency_overrides[get_session] = lambda: test_db_session
+    app.dependency_overrides[get_auth_payload] = lambda: {"sub": "test-user", "role": "admin"}
     
     # Mock infrastructure in the container
     container = get_container()

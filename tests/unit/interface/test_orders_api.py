@@ -11,7 +11,7 @@ from decimal import Decimal
 from datetime import datetime, timezone
 
 from src.main import app
-from src.dependencies import get_place_order_service, get_session
+from src.dependencies import get_place_order_service, get_session, get_auth_payload
 from src.application.dtos import OrderResponseDTO, OrderItemResponseDTO
 from src.domain.exceptions import ProductNotFoundError, InsufficientStockError
 
@@ -27,6 +27,8 @@ def client(mock_service):
     app.dependency_overrides[get_place_order_service] = lambda: mock_service
     # Also override session to prevent DB connection
     app.dependency_overrides[get_session] = lambda: AsyncMock()
+    # Override auth to allow access in unit tests
+    app.dependency_overrides[get_auth_payload] = lambda: {"sub": "test-user", "role": "admin"}
     
     yield TestClient(app)
     

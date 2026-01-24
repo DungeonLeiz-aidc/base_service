@@ -1,0 +1,104 @@
+2026-01-24 16:25:21 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:25:21 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:25:21 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:25:21 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:25:21 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:25:27 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:54 - Incoming request: GET / | Params: {}
+2026-01-24 16:25:27 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:63 - Response: GET / | Status: 404 | Duration: 0.41ms
+2026-01-24 16:25:27 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:54 - Incoming request: GET /favicon.ico | Params: {}
+2026-01-24 16:25:27 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:63 - Response: GET /favicon.ico | Status: 404 | Duration: 0.39ms
+2026-01-24 16:25:32 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:54 - Incoming request: GET /docs | Params: {}
+2026-01-24 16:25:32 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:63 - Response: GET /docs | Status: 200 | Duration: 0.37ms
+2026-01-24 16:25:32 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:54 - Incoming request: GET /openapi.json | Params: {}
+2026-01-24 16:25:32 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:63 - Response: GET /openapi.json | Status: 200 | Duration: 6.53ms
+2026-01-24 16:25:45 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:54 - Incoming request: GET /health | Params: {}
+2026-01-24 16:25:45 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:63 - Response: GET /health | Status: 200 | Duration: 0.88ms
+2026-01-24 16:25:49 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:54 - Incoming request: GET /health | Params: {}
+2026-01-24 16:25:49 | INFO    | src.interface.http.middlewares.logging_middleware:dispatch:63 - Response: GET /health | Status: 200 | Duration: 0.49ms
+2026-01-24 16:27:09 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:27:09 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:27:09 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:27:09 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:27:09 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:27:09 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:27:09 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:27:10 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:27:10 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:27:10 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:27:10 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:27:10 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:27:18 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:27:18 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:27:19 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:27:19 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:27:19 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:27:19 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:27:19 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:27:34 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:27:35 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:27:35 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:27:35 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:27:35 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:27:35 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:27:36 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:27:36 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:27:37 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:27:37 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:27:37 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:27:37 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:27:37 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:27:48 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:27:49 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:27:49 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:27:49 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:27:49 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:27:49 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:28:11 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:28:12 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:28:12 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:28:12 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:28:12 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:28:12 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:28:28 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:28:28 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:28:28 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:28:28 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:28:28 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:28:28 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:28:28 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:28:38 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:28:38 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:28:38 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:28:38 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:28:38 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:28:38 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:28:40 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:28:40 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:28:40 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:28:40 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:28:40 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:28:49 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:28:49 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:28:49 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:28:49 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:28:49 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:28:49 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:28:49 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:32:02 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:32:02 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:34:19 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:34:19 | INFO    | src.main:lifespan:26 - Starting OrderPlacementService...
+2026-01-24 16:34:19 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:34:19 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:34:19 | INFO    | src.main:lifespan:32 - Connected to RabbitMQ
+2026-01-24 16:34:22 | INFO    | src.main:lifespan:39 - Shutting down OrderPlacementService...
+2026-01-24 16:34:22 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:38:26 | INFO    | configs.logging_config:setup_logging:97 - Logging system initialized via Centralized Config.
+2026-01-24 16:38:26 | INFO    | src.main:lifespan:27 - AUDIT | START | OrderPlacementService starting...
+2026-01-24 16:38:26 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:40 - Connecting to RabbitMQ: amqp://guest:guest@localhost:5672/
+2026-01-24 16:38:26 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:connect:48 - Connected to RabbitMQ exchange: order_events
+2026-01-24 16:38:26 | INFO    | src.main:lifespan:35 - AUDIT | SUCCESS | Connected to RabbitMQ.
+2026-01-24 16:38:31 | INFO    | src.main:lifespan:43 - AUDIT | SHUTDOWN | OrderPlacementService stopping...
+2026-01-24 16:38:31 | INFO    | src.container:dispose:89 - AUDIT | START | DISPOSAL | Cleaning system resources...
+2026-01-24 16:38:31 | INFO    | src.infrastructure.messaging.rabbitmq_publisher:close:54 - Closed RabbitMQ connection
+2026-01-24 16:38:31 | INFO    | src.container:dispose:110 - AUDIT | SUCCESS | DISPOSAL | Resources cleared. Shutting down logging...

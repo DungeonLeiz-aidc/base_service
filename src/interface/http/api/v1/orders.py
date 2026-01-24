@@ -17,7 +17,7 @@ from src.domain.exceptions import (
     InsufficientStockError,
     OrderValidationError,
 )
-from src.dependencies import get_place_order_service
+from src.dependencies import get_place_order_service, get_auth_payload
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -31,6 +31,7 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 )
 async def place_order(
     request: PlaceOrderRequest,
+    current_user: dict = Depends(get_auth_payload),
     service: PlaceOrderService = Depends(get_place_order_service),
 ):
     """

@@ -28,3 +28,15 @@ class IEventPublisher(Protocol):
     async def publish(self, event) -> None:
         """Publish domain event."""
         ...
+
+
+class IAuthProvider(Protocol):
+    """Protocol for authentication provider."""
+    
+    def create_access_token(self, data: dict) -> str:
+        """Create a new JWT access token."""
+        ...
+    
+    def verify_token(self, token: str) -> dict:
+        """Verify a JWT token and return the payload."""
+        ...

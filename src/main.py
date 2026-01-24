@@ -20,25 +20,33 @@ from src.interface.http.api.v1 import orders
 async def lifespan(app: FastAPI):
     """
     Handle application startup and shutdown events.
+    Ensures absolute resource integrity with try...finally blocks.
     """
-    # Initialize logging
+    # 1. Initialize logging
     setup_logging(settings)
-    logger.info(f"Starting {settings.PROJECT_NAME}...")
+    logger.info(f"AUDIT | START | {settings.PROJECT_NAME} starting...")
     
-    # Initialize container and connect to external services
     container = get_container()
+    
     try:
-        await container.event_publisher.connect()
-        logger.info("Connected to RabbitMQ")
-    except Exception as e:
-        logger.error(f"Failed to connect to RabbitMQ on startup: {e}")
-    
-    yield
-    
-    # Shutdown logic
-    logger.info(f"Shutting down {settings.PROJECT_NAME}...")
-    await container.event_publisher.close()
-    await container.engine.dispose()
+        # 2. Connect to Infrastructure
+        try:
+            await container.event_publisher.connect()
+            logger.info("AUDIT | SUCCESS | Connected to RabbitMQ.")
+        except Exception as e:
+            logger.error(f"AUDIT | FAILED | RabbitMQ connection: {e}")
+        
+        yield
+        
+    finally:
+        # 3. Defensive Cleanup (Execution guaranteed on Ctrl+C)
+        logger.info(f"AUDIT | SHUTDOWN | {settings.PROJECT_NAME} stopping...")
+        try:
+            # Centralized disposal of DB, Redis, Messaging, and Logger
+            await container.dispose()
+        except Exception as e:
+            import sys
+            sys.stderr.write(f"AUDIT | CRITICAL | Global Shutdown Cleanup Failed: {str(e)}\n")
 
 
 from src.interface.http.middlewares import (
