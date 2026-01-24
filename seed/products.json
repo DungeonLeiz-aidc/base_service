@@ -1,0 +1,37 @@
+[
+    {
+        "sku": "PROD-001",
+        "name": "Smartphone X1",
+        "description": "Latest generation smartphone with 5G",
+        "price": 899.99,
+        "stock_quantity": 50
+    },
+    {
+        "sku": "PROD-002",
+        "name": "Laptop Pro 14",
+        "description": "Powerful laptop for professionals",
+        "price": 1499.50,
+        "stock_quantity": 25
+    },
+    {
+        "sku": "PROD-003",
+        "name": "Wireless Earbuds",
+        "description": "Noise cancelling wireless earbuds",
+        "price": 199.00,
+        "stock_quantity": 100
+    },
+    {
+        "sku": "PROD-004",
+        "name": "Smart Watch",
+        "description": "Fitness tracker and smart watch",
+        "price": 249.99,
+        "stock_quantity": 75
+    },
+    {
+        "sku": "PROD-005",
+        "name": "4K Monitor 27",
+        "description": "Ultra HD monitor for work and play",
+        "price": 399.00,
+        "stock_quantity": 30
+    }
+]
