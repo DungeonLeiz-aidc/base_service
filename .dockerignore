@@ -1,18 +1,33 @@
-__pycache__
-*.py[cod]
-*$py.class
-.pytest_cache
-.venv
-venv
-ENV
-.env
-*.db
-*.sqlite3
-.DS_Store
+# Git
 .git
 .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Project specific
+logs/
+tests/
+alembic/
+seed/
+docs/
+*.md
+!README.md
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Docker
 Dockerfile
 docker-compose.yml
-README.md
-docs/
-tests/
+.dockerignore

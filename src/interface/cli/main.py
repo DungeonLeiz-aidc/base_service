@@ -61,10 +61,10 @@ async def _check_rabbitmq(container) -> str:
 def seed_data():
     """
     Seed initial product data into the database.
-    
-    This command orchestrates the population of the product catalog using the SeedService.
-    It identifies duplicates by SKU and performs updates if necessary.
     """
+    from configs.logging_config import setup_logging
+    setup_logging(settings)
+    
     logger.info("AUDIT | START | COMMAND: seed-data")
     
     async def run_seed():
@@ -95,12 +95,10 @@ def seed_data():
 def check_status():
     """
     Execute exhaustive health diagnostics for all core services.
-    
-    Verifies real-time connectivity to:
-    - PostgreSQL (via SQLAlchemy)
-    - Redis (via aioredis ping)
-    - RabbitMQ (via aio-pika connection)
     """
+    from configs.logging_config import setup_logging
+    setup_logging(settings)
+    
     logger.info("AUDIT | START | COMMAND: check-status")
     
     async def run_diagnostics():

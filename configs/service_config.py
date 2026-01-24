@@ -5,9 +5,24 @@ Service configuration using Pydantic.
 Handles environment variables with validation and default values.
 """
 
+from enum import Enum
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+
+
+class AppEnvironment(str, Enum):
+    """Supported application environments."""
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+    TESTING = "testing"
+
+
+class LogFormat(str, Enum):
+    """Supported logging formats."""
+    PRETTY = "pretty"
+    JSON = "json"
 
 
 class ServiceSettings(BaseSettings):
@@ -18,10 +33,11 @@ class ServiceSettings(BaseSettings):
     # Project Info
     PROJECT_NAME: str = "OrderPlacementService"
     DEBUG: bool = False
-    ENVIRONMENT: str = "development"
+    ENVIRONMENT: AppEnvironment = AppEnvironment.DEVELOPMENT
 
     # Logging Configuration
     LOG_LEVEL: str = Field(default="INFO")
+    LOG_FORMAT: LogFormat = LogFormat.PRETTY
     LOG_DIR: str = Field(default="logs")
     LOG_RETENTION: str = Field(default="90 days")
     LOG_ROTATION: str = Field(default="00:00")
