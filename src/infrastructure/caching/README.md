@@ -1,6 +1,6 @@
-# ⚡ Caching & Distribution - Tối ưu Hiệu năng và Đồng bộ / Performance & Consistency
+# ⚡ Caching & Distribution - Tối ưu Hiệu năng / Performance & Scale
 
-**Mục đích / Purpose**: Danh mục này tập trung vào việc sử dụng bộ nhớ đệm (Cache) để giảm tải cho database và cơ chế Khóa phân tán (Distributed Lock) để đảm bảo tính toàn vẹn dữ liệu trong môi trường nhiều người dùng. / This directory focuses on using Caching to reduce database load and Distributed Locking to ensure data integrity in concurrent user environments.
+**Mục đích / Purpose**: Danh mục này tập trung vào việc sử dụng Redis để tăng tốc độ truy cập dữ liệu và cơ chế Khóa phân tán (Distributed Lock) để đảm bảo tính nhất quán trong môi trường nhiều server. / This directory focuses on using Redis to accelerate data access and Distributed Locking to ensure consistency across multiple server instances.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,24 +8,28 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Caching**: Lưu trữ các kết quả tính toán hoặc truy vấn nặng vào bộ nhớ tốc độ cao (Redis). Thay vì hỏi Database (chậm), chúng ta hỏi Redis (nhanh).
-- **Distributed Lock**: Trong hệ thống phân tán, nhiều server có thể cùng xử lý một mặt hàng. Khóa giúp đảm bảo chỉ có một server được phép thay đổi số lượng tồn kho tại một thời điểm, tránh việc bán quá số lượng (Overselling).
-- **Time-to-Live (TTL)**: Dữ liệu trong cache không tồn tại mãi mãi. Chúng ta đặt thời hạn để dữ liệu tự động bị xóa, đảm bảo tính cập nhật.
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Trong hệ thống thương mại điện tử, hàng nghìn người có thể cùng mua một món hàng. Nếu chỉ dùng Database, việc kiểm tra tồn kho sẽ rất chậm và dễ bị lỗi tranh chấp (Race Condition).
+- **Why Distributed Lock?**: Chúng ta dùng Redis Lock để đảm bảo tại một thời điểm, chỉ có một luồng xử lý được quyền "giữ" hàng cho khách, ngăn chặn tuyệt đối tình trạng Bán quá số lượng (Overselling).
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong dự án này:
-- `redis_inventory_cache.py`: Triển khai logic khóa để "giữ hàng" khi khách đang thanh toán, đảm bảo không ai khác có thể mua mất món hàng đó trong vài phút.
+### ⚠️ Ràng buộc (Constraints)
+1. **Timeout Sensitive**: Lock phải luôn có thời hạn (TTL) để tránh việc hệ thống bị treo vĩnh viễn nếu một server bị sập khi đang giữ lock.
+2. **Fail-Safe**: Hệ thống phải hoạt động bình thường (hoặc fallback) nếu Redis gặp sự cố tạm thời.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **InventoryLock**: [Redis implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) thực hiện việc giữ hàng trong 30 giây khi khách đang thanh toán.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Caching**: Stores heavy query results or calculations in high-speed memory (Redis). We query Redis (fast) instead of the Database (slower).
-- **Distributed Lock**: In a distributed system, multiple servers might process the same item simultaneously. A lock ensures only one server updates inventory at a time, preventing overselling.
-- **Time-to-Live (TTL)**: Cache data shouldn't live forever. We set expiration times to ensure data remains fresh.
+### 📄 Context & Rationale
+- **Context**: In e-commerce, thousands of users might buy the same item simultaneously. Relying solely on the Database for stock checks is slow and prone to race conditions.
+- **Why Distributed Lock?**: We use Redis Locks to ensure that only one process can "reserve" stock at any given time, strictly preventing Overselling.
 
-### 🏛️ Practical Example
-In this project:
-- `redis_inventory_cache.py`: Implements locking logic to "reserve" items during checkout, ensuring no other customer can buy the same item for a few minutes.
+### ⚠️ Constraints
+1. **Timeout Sensitive**: Locks must always have a Time-to-Live (TTL) to prevent permanent system deadlocks if a server crashes while holding a lock.
+2. **Fail-Safe**: The system should handle Redis downtime gracefully (e.g., via fallbacks).
+
+### 🏛️ Practical Examples
+- **InventoryLock**: [Redis implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) reserves items for 30 seconds during the checkout phase.

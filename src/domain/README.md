@@ -1,6 +1,6 @@
-# 📦 Domain Layer - Linh hồn của Doanh nghiệp / Core Business Logic
+# 📦 Domain Layer - Trái tim của Hệ thống / The Business Core
 
-**Mục đích / Purpose**: Tầng Domain là nơi định nghĩa "Luật chơi". Nó chứa các khái niệm cốt lõi, quy tắc và logic nghiệp vụ mà không quan tâm đến việc dữ liệu được lưu ở đâu hay API trông như thế nào. / The Domain layer defines the "Rules of the Game". It contains core concepts, business rules, and logic, independent of data storage or API structures.
+**Mục đích / Purpose**: Tầng Domain chứa đựng các quy tắc nghiệp vụ bất biến (invariants) và logic cốt lõi. Đây là phần quý giá nhất của codebase, hoàn toàn tách biệt khỏi các yếu tố kỹ thuật. / The Domain layer encapsulates invariant business rules and core logic. It is the most valuable part of the project, strictly isolated from technical concerns.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,28 +8,30 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Entities**: Những đối tượng có định danh (ID) duy nhất và vòng đời dài (ví dụ: `Order` #123). Ngay cả khi thuộc tính thay đổi, nó vẫn là chính nó.
-- **Value Objects**: Những đối tượng được định nghĩa bằng các giá trị thuộc tính (ví dụ: `Price`, `Address`). Nếu hai Address có cùng số nhà, chúng được coi là bằng nhau.
-- **Domain Service**: Các logic nghiệp vụ không thuộc về một Entity cụ thể nào mà phối hợp nhiều Entities.
-- **Exceptions**: Các lỗi nghiệp vụ thuần túy (như `Sản phẩm đã hết hàng`).
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tại sao cần Domain riêng? Để khi bạn đổi từ SQL sang NoSQL, hay từ REST sang GraphQL, trái tim của doanh nghiệp (cách đặt hàng, cách tính giá) vẫn không hề thay đổi.
+- **Why Repository Interface?**: Chúng ta để Interface ở Domain để Domain có thể "yêu cầu" dữ liệu mà không cần biết dữ liệu đó đến từ Postgres hay một API bên thứ ba.
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong hệ thống OMS này:
-- `Order` là một Entity quan trọng quản lý trạng thái đơn hàng.
-- `src/domain/exceptions.py` định nghĩa các lỗi mà hệ thống sẽ gặp phải khi logic nghiệp vụ bị vi phạm.
+### ⚠️ Ràng buộc (Constraints)
+1. **Zero External Dependencies**: Tuyệt đối không import từ `infrastructure`, `application` hay bất kỳ thư viện IO nào (SQLAlchemy, FastAPI).
+2. **Persistence Ignorant**: Entities không nên biết chúng được lưu trữ như thế nào.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **Entities**: [Order](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/entities/order.py) quản lý trạng thái và tính toán tổng tiền.
+- **Interfaces**: [IOrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/interfaces/repositories.py) định nghĩa các bản hợp đồng lưu trữ.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Entities**: Objects with a unique identity (ID) and a long lifecycle (e.g., `Order` #123). They remain the same object even if attributes change.
-- **Value Objects**: Objects defined by their attribute values (e.g., `Price`, `Address`). Two Address objects with identical values are considered equal.
-- **Domain Service**: Business logic that doesn't naturally belong to a specific Entity but coordinates multiple Entities.
-- **Exceptions**: Pure business errors (e.g., `Product Out of Stock`).
+### 📄 Context & Rationale
+- **Context**: Why isolate the Domain? So that when you switch from SQL to NoSQL, or REST to GraphQL, the business heart (how to order, how to price) remains untouched.
+- **Why Repository Interface?**: We place the Interface in the Domain so the Domain can "request" data without needing to know if it comes from Postgres or an external API.
 
-### 🏛️ Practical Example
-In this OMS system:
-- `Order` is a key Entity managing order states.
-- `src/domain/exceptions.py` defines errors triggered when business invariants are violated.
+### ⚠️ Constraints
+1. **Zero External Dependencies**: Strictly no imports from `infrastructure`, `application`, or any IO libraries (SQLAlchemy, FastAPI).
+2. **Persistence Ignorant**: Entities should not be aware of how they are stored.
+
+### 🏛️ Practical Examples
+- **Entities**: [Order](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/entities/order.py) handles state transitions and totals.
+- **Interfaces**: [IOrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/domain/interfaces/repositories.py) defines persistence contracts.

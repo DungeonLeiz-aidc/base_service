@@ -1,6 +1,6 @@
 # 📣 Domain Events - Tiếng nói của Nghiệp vụ / The Voice of the Domain
 
-**Mục đích / Purpose**: Domain Events là cách hệ thống ghi lại và thông báo về một điều gì đó quan trọng vừa xảy ra trong nghiệp vụ. Nó giúp các phần khác nhau của hệ thống giao tiếp với nhau mà không cần biết quá nhiều về nhau (Decoupling). / Domain Events are how the system records and announces significant business occurrences. They allow different parts of the system to communicate without tight coupling.
+**Mục đích / Purpose**: Domain Events ghi lại những sự kiện quan trọng vừa xảy ra trong nghiệp vụ. Chúng cho phép các thành phần khác nhau của hệ thống giao tiếp mà không cần phụ thuộc trực tiếp vào nhau. / Domain Events record significant business occurrences, enabling decoupled communication between different system components.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,24 +8,28 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Sức mạnh bất biến**: Sự kiện là những gì "đã xảy ra" trong quá khứ (Past Tense). Một khi đã xảy ra, nó không bao giờ thay đổi.
-- **Tính lây lan (Propagation)**: Khi một sự kiện như `OrderPlaced` nổ ra, nó có thể kích hoạt một chuỗi các hành động khác như: Gửi email xác nhận, Trừ tồn kho, Sinh hóa đơn.
-- **Event-Driven Architecture**: Giúp hệ thống mở rộng dễ dàng. Bạn có thể thêm một dịch vụ "Khuyến mãi" mới lắng nghe sự kiện `OrderPlaced` mà không cần sửa code của tầng `Order`.
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Khi một đơn hàng được đặt, nhiều việc cần xảy ra: Gửi mail, Trừ kho, Sinh hóa đơn. Nếu gom tất cả vào một Service, code sẽ trở nên khổng lồ và khó bảo trì.
+- **Why Async Events?**: Sử dụng Event giúp chúng ta tách biệt các hành động này. Service đặt hàng chỉ việc "bắn" ra một sự kiện, còn ai làm gì tiếp theo là việc của các Worker khác.
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong dự án này:
-- `order_events.py`: Định nghĩa các class như `OrderPlaced` chứa thông tin về `order_id` và danh sách sản phẩm. Đây là gói thông tin được gửi đi khắp hệ thống.
+### ⚠️ Ràng buộc (Constraints)
+1. **Immutable**: Sự kiện đại diện cho quá khứ, không bao giờ được phép thay đổi dữ liệu bên trong sự kiện.
+2. **Minimal Payload**: Chỉ nên chứa những thông tin thiết yếu (Vd: ID Đơn hàng), không nên chứa cả object khổng lồ.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **OrderPlaced**: Chứa `order_id` và timestamp. Đây là "ngòi nổ" cho chuỗi xử lý sau bán hàng.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Immutability**: Events represent something that has "already happened" (Past Tense). Once they occur, they never change.
-- **Propagation**: When an event like `OrderPlaced` is fired, it can trigger a chain of subsequent actions: sending confirmation emails, deducting inventory, or generating invoices.
-- **Event-Driven Architecture**: Enhances scalability. You can add a new "Promotion" service that listens for the `OrderPlaced` event without modifying the `Order` layer's code.
+### 📄 Context & Rationale
+- **Context**: When an order is placed, several actions should follow: emailing the customer, deducting stock, generating invoices. Combining these into a single Service leads to bloated, unmaintainable code.
+- **Why Async Events?**: Events allow us to decouple these actions. The Order Service simply "fires" an event, and background workers handle the subsequent tasks independently.
 
-### 🏛️ Practical Example
-In this project:
-- `order_events.py`: Defines classes like `OrderPlaced` containing `order_id` and item lists. This is the data package distributed throughout the system.
+### ⚠️ Constraints
+1. **Immutable**: Events represent the past; their internal data must never be altered.
+2. **Minimal Payload**: Should only carry essential information (e.g., Order ID) rather than large, complex objects.
+
+### 🏛️ Practical Examples
+- **OrderPlaced**: Carries `order_id` and timestamp. It acts as the "trigger" for post-sale processing workflows.

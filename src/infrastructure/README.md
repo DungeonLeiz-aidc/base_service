@@ -1,6 +1,6 @@
-# 🔌 Infrastructure Layer - Tầng Thực Thi Kỹ Thuật / Technical Implementation
+# 🏗️ Infrastructure Layer - Chi tiết Kỹ thuật / Technical Implementation
 
-**Mục đích / Purpose**: Tầng Infrastructure là nơi hiện thực hóa các ý tưởng của tầng Application bằng các công nghệ cụ thể. Đây là nơi code của bạn tương tác với thế giới bên ngoài như Database, Mail Server, hoặc Message Broker. / The Infrastructure layer provides concrete technical implementations for the ideas defined in the Application layer. This is where your code interacts with the outside world, such as Databases, Mail Servers, or Message Brokers.
+**Mục đích / Purpose**: Tầng Infrastructure là nơi hiện thực hóa các "bản hợp đồng" từ Domain. Nó chứa mã nguồn liên quan đến Database, Cache, Messaging và các dịch vụ bên thứ ba. / The Infrastructure layer provides the concrete implementation of Domain contracts. It contains all code related to Databases, Caching, Messaging, and third-party services.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,28 +8,30 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Persistence (Repositories)**: Triển khai việc lưu trữ dữ liệu vào database thực (PostgreSQL). Nó cụ thể hóa các interface đã định nghĩa trong domain.
-- **Adapters / Clients**: Các lớp bao bọc lấy các thư viện bên ngoài (Redis client, RabbitMQ client) để cung cấp bộ API đơn giản cho hệ thống.
-- **Data Models**: Các lớp định nghĩa cấu trúc bảng cho ORM (SQLAlchemy). Khác với Domain Entities, Models tập trung vào cách dữ liệu được lưu trữ.
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tại sao lại để Database ở ngoài cùng? Để logic nghiệp vụ không bị phụ thuộc vào SqlAlchemy hay Redis. Khi cần thay đổi thư viện, bạn chỉ cần sửa ở tầng này.
+- **Why Mapping?**: Đây là nơi chúng ta thực hiện việc "ánh xạ" (Mapping) từ các Model của Database (vốn có nhiều ràng buộc kỹ thuật) sang các Entity của Domain (vốn chỉ quan tâm đến nghiệp vụ).
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong dự án này:
-- `repositories/`: Sử dụng SQLAlchemy Async để truy vấn PostgreSQL.
-- `clients/`: Chứa các bộ điều khiển cho Redis (quản lý kho) và RabbitMQ (bắn sự kiện).
-- `models/`: Chứa định nghĩa schema cho database.
+### ⚠️ Ràng buộc (Constraints)
+1. **Implementation-Focused**: Tầng này chỉ chứa mã thực thi các Interface đã định nghĩa ở Domain.
+2. **Framework Boundary**: Đây là nơi duy nhất được phép chứa các thư viện nặng về IO (SQLAlchemy, Redis-py, Aio-pika).
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **Repositories**: [OrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/order_repository.py) sử dụng SQLAlchemy.
+- **Clients**: [RedisInventoryCache](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) xử lý Distributed Locking.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Persistence (Repositories)**: Implements data storage in the actual database (PostgreSQL). It realizes the interfaces defined in the domain.
-- **Adapters / Clients**: Classes that wrap external libraries (Redis client, RabbitMQ client) to provide a simplified API for the system.
-- **Data Models**: Classes defining table structures for the ORM (SQLAlchemy). Unlike Domain Entities, Models focus on how data is stored.
+### 📄 Context & Rationale
+- **Context**: Why keep the Database on the outermost layer? To prevent business logic from depending on SQLAlchemy or Redis. When libraries change, modifications are localized here.
+- **Why Mapping?**: This is where we perform "Mapping" between Database Models (with technical constraints) and Domain Entities (focused solely on business).
 
-### 🏛️ Practical Example
-In this project:
-- `repositories/`: Uses SQLAlchemy Async to query PostgreSQL.
-- `clients/`: Contains controllers for Redis (inventory management) and RabbitMQ (event publishing).
-- `models/`: Contains database schema definitions.
+### ⚠️ Constraints
+1. **Implementation-Focused**: This layer only implements Interfaces defined in the Domain.
+2. **Framework Boundary**: This is the only place allowed to contain IO-heavy libraries (SQLAlchemy, Redis-py, Aio-pika).
+
+### 🏛️ Practical Examples
+- **Repositories**: [OrderRepository](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/order_repository.py) uses SQLAlchemy.
+- **Clients**: [RedisInventoryCache](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/caching/redis_inventory_cache.py) handles Distributed Locking.

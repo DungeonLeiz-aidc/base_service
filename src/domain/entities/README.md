@@ -1,6 +1,6 @@
-# 🏢 Domain Entities - Thực thể và Bản sắc / Entities & Identity
+# 🎭 Domain Entities - Bản sắc của Nghiệp vụ / Core Business Identity
 
-**Mục đích / Purpose**: Entities là những thành phần quan trọng nhất trong Domain. Chúng mang trong mình bản sắc (identity) và chứa đựng các quy tắc nghiệp vụ bất biến của hệ thống. / Entities are the most critical components of the Domain. They carry an identity and contain the system's invariant business rules.
+**Mục đích / Purpose**: Entities là những đối tượng có định danh (Identity) duy nhất và vòng đời dài hạn. Chúng chứa đựng các quy tắc nghiệp vụ cốt lõi và đảm bảo tính nhất quán của dữ liệu. / Entities are objects with a unique identity and a long-term lifecycle. They encapsulate core business rules and ensure data consistency.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,26 +8,30 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Định danh (Identity)**: Một Entity được xác định bởi ID của nó, không phải bởi giá trị các thuộc tính. Một người dùng vẫn là người dùng đó ngay cả khi họ đổi tên.
-- **Bất biến (Invariants)**: Entity chịu trách nhiệm đảm bảo dữ liệu của nó luôn hợp lệ theo luật nghiệp vụ (ví dụ: số lượng sản phẩm trong đơn hàng không được âm).
-- **Vòng đời (Lifecycle)**: Entities có trạng thái thay đổi theo thời gian (ví dụ: Đơn hàng từ `Pending` sang `Shipped`).
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tại sao không dùng dictionary? Vì Entity có "hành vi" (behavior). Ví dụ: Một Đơn hàng biết cách tự tính tổng số tiền và kiểm tra xem nó có thể chuyển trạng thái hay không.
+- **Why Invariants?**: Các phương thức trong Entity giúp bảo vệ các "bất biến" (Invariants). Bạn không thể thay đổi giá sản phẩm thành số âm vì Entity sẽ ngăn chặn điều đó ngay lập tức.
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong OMS này:
-- `Order`: Một Entity phức tạp quản lý danh sách `OrderItem` và tổng giá trị đơn hàng.
-- `Product`: Thực thể đại diện cho hàng hóa trong kho với SKU và giá bán.
+### ⚠️ Ràng buộc (Constraints)
+1. **Rich Domain Model**: Ưu tiên đưa logic vào Entity thay vì để Service xử lý (tránh Anemic Domain Model).
+2. **Identification**: Luôn xác định thực thể bằng ID hoặc SKU, không phải bằng thuộc tính ngẫu nhiên.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **Order Entity**: Chứa danh sách `OrderItem` và logic chuyển trạng thái `confirm()`, `cancel()`.
+- **Product Entity**: Quản lý `stock_quantity` và đảm bảo không bao giờ bị âm.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Identity**: An Entity is identified by its ID, not by its attribute values. A user remains the same user even if they change their name.
-- **Invariants**: Entities are responsible for ensuring their data is always valid according to business rules (e.g., product quantity in an order cannot be negative).
-- **Lifecycle**: Entities have states that evolve over time (e.g., an Order moving from `Pending` to `Shipped`).
+### 📄 Context & Rationale
+- **Context**: Why not use simple dictionaries? Entities have "behavior". For instance, an Order knows how to calculate its total and validate its own state transitions.
+- **Why Invariants?**: Entity methods protect business "Invariants". You cannot set a negative price because the Entity will immediately block such an invalid state.
 
-### 🏛️ Practical Example
-In this OMS:
-- `Order`: A complex Entity managing a list of `OrderItem`s and calculated totals.
-- `Product`: Represents warehouse goods with specific SKUs and pricing.
+### ⚠️ Constraints
+1. **Rich Domain Model**: Prefer logic within Entities over Services (avoiding the Anemic Domain Model anti-pattern).
+2. **Identification**: Always identify entities by ID or SKU, never by transient attributes.
+
+### 🏛️ Practical Examples
+- **Order Entity**: Contains `OrderItem` list and logic for `confirm()` and `cancel()` transitions.
+- **Product Entity**: Manages `stock_quantity` and ensures it never drops below zero.

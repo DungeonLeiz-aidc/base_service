@@ -1,6 +1,6 @@
-# 🎓 Clean Architecture & DDD Boilerplate (Python)
+# 🎓 Clean Architecture & DDD Knowledge Map (Python)
 
-**Mục tiêu / Mission**: Dự án này không chỉ là một ứng dụng Quản lý Đơn hàng (OMS), mà là một giáo trình thực hành về **Clean Architecture** và **Domain-Driven Design (DDD)** trong môi trường Python hiện đại. / This project is not just an Order Management System (OMS), but a practical curriculum for **Clean Architecture** and **Domain-Driven Design (DDD)** in a modern Python environment.
+**Mission / Sứ mệnh**: Dự án này là một cỗ máy hoàn chỉnh được thiết kế để học tập và triển khai Microservices chuyên nghiệp, tuân thủ nguyên tắc **Clean Architecture** và **Domain-Driven Design (DDD)**. / This project is a complete engine designed for learning and building professional Microservices, adhering to **Clean Architecture** and **Domain-Driven Design (DDD)**.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,50 +8,74 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📖 Tại sao dự án này tồn tại?
-Dự án được thiết kế để giải quyết sự phức tạp của phần mềm bằng cách tách biệt logic nghiệp vụ khỏi các ràng buộc về công nghệ (database, framework, external services). Đây là nền tảng để bạn học cách xây dựng các hệ thống Microservices bền vững và dễ kiểm thử.
+### 🏛️ Sơ đồ Kiến trúc (Architecture Map)
 
-### 🏛️ Trụ cột kiến trúc (The Pillars)
-| Layer | Trách nhiệm | Ví dụ trong OMS |
-| :--- | :--- | :--- |
-| **Domain** | Chứa logic nghiệp vụ cốt lõi, không phụ thuộc framework. | `Order`, `Product`, `OrderPlaced` event. |
-| **Application** | Điều phối các luồng xử lý (Use Cases). | `PlaceOrderService`. |
-| **Infrastructure** | Triển khai kỹ thuật (DB, Redis, Messaging). | `SQLAlchemy Repository`, `Redis Cache`. |
-| **Interface** | Cổng giao tiếp với thế giới bên ngoài. | `FastAPI Routes`, `Typer CLI`. |
+```mermaid
+graph TD
+    subgraph "Interface Layer (Web/CLI/Workers)"
+        API[FastAPI Routes]
+        CLI[Typer CLI]
+        WRK[RabbitMQ Worker]
+    end
 
-### 🛠️ Công nghệ & Lý do lựa chọn
-- **FastAPI**: Tận dụng sức mạnh của `asyncio` và `pydantic` cho hiệu năng và tính an toàn kiểu dữ liệu.
-- **Redis**: Giải quyết vấn đề **Concurrency** (overselling) bằng Distributed Locking.
-- **RabbitMQ**: Demo mô hình **Event-driven**, giúp hệ thống mở rộng và giảm tải (decoupling).
+    subgraph "Application Layer (Use Cases)"
+        SVC[OrderPlaceService]
+        DTO[Data Transfer Objects]
+    end
 
-### 🚀 Lộ trình học (How to learn)
-1. Đọc tầng **Domain** để hiểu luật chơi.
-2. Xem tầng **Application** để thấy cách luật chơi được thực thi qua Use Cases.
-3. Khám phá **Infrastructure** để thấy cách kết nối với thế giới thực.
-4. Chạy **Manual Tests** để thấy toàn bộ hệ thống phối hợp.
+    subgraph "Domain Layer (Business Core)"
+        ENT[Order/Product Entities]
+        EVT[OrderPlaced Events]
+        INT[Repository Interfaces]
+    end
+
+    subgraph "Infrastructure Layer (Technical Detail)"
+        DB[PostgreSQL/SQLAlchemy]
+        RD[Redis/Distributed Lock]
+        RMQ[RabbitMQ/Publisher]
+    end
+
+    API --> SVC
+    CLI --> SVC
+    WRK --> SVC
+    SVC --> ENT
+    SVC --> INT
+    INT --> DB
+    SVC --> RD
+    SVC --> RMQ
+```
+
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tại sao phải phức tạp như vậy? Trong các hệ thống lớn, việc thay đổi Database hay API framework là chuyện thường ngày. Nếu code nghiệp vụ bị trộn lẫn, hệ thống sẽ sụp đổ khi thay đổi.
+- **Constraints**: 
+    1. **Dependency Rule**: Tầng bên trong không bao giờ được biết về tầng bên ngoài.
+    2. **Pure Domain**: Domain không được chứa bất kỳ mã IO hay framework nào (không SQLAlchemy, không FastAPI).
+
+### 🚀 Điểm nhấn Kỹ thuật (Engineering Highlights)
+- **PII Masking**: Tự động che giấu dữ liệu nhạy cảm (Email, ID) trong logs hệ thống.
+- **Circuit Breaker**: Bảo vệ hệ thống khi dịch vụ thanh toán bên ngoài (Stripe) gặp sự cố.
+- **Async Efficiency**: Toàn bộ luồng từ API -> Service -> DB đều chạy Bất đồng bộ (Async).
+
+### 📖 Hướng dẫn Mở rộng (Scaling Guide)
+Xem chi tiết tại: [EXTENSIBILITY.md](file:///home/korosaki-ryukai/Workspace/Service/base_service/docs/EXTENSIBILITY.md)
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📖 Why does this project exist?
-This project is designed to tackle software complexity by isolating business logic from technological constraints (databases, frameworks, external services). It serves as a foundation for learning how to build sustainable, testable Microservices.
+### 🏛️ Architecture Map
+(See Mermaid diagram above)
 
-### 🏛️ Architectural Pillars
-| Layer | Responsibility | Example in OMS |
-| :--- | :--- | :--- |
-| **Domain** | Pure business logic, framework-independent. | `Order`, `Product`, `OrderPlaced` event. |
-| **Application** | Orchestrates workflows (Use Cases). | `PlaceOrderService`. |
-| **Infrastructure** | Technical implementations (DB, Redis, Messaging). | `SQLAlchemy Repository`, `Redis Cache`. |
-| **Interface** | Gateways to the outside world. | `FastAPI Routes`, `Typer CLI`. |
+### 📄 Context & Constraints
+- **Context**: Why this complexity? In enterprise systems, switching databases or API frameworks is common. If business logic is entangled with tech, the system breaks during transitions.
+- **Constraints**: 
+    1. **Dependency Rule**: Inner layers never depend on outer layers.
+    2. **Pure Domain**: The Domain must remain free of IO or framework libraries (no SQLAlchemy, no FastAPI).
 
-### 🛠️ Technology Stack & Rationale
-- **FastAPI**: Leverages `asyncio` and `pydantic` for high performance and type safety.
-- **Redis**: Handles **Concurrency** issues (overselling) using Distributed Locking.
-- **RabbitMQ**: Demonstrates an **Event-driven** model for system scalability and decoupling.
+### 🚀 Engineering Highlights
+- **PII Masking**: Automatically redacts sensitive data (Emails, IDs) in system logs.
+- **Circuit Breaker**: Protects system stability when external services (Stripe) fail.
+- **Async Efficiency**: Pure async flow across API, Services, and Infrastructure.
 
-### 🚀 Learning Path
-1. Read the **Domain** layer to understand the rules of the game.
-2. Check the **Application** layer to see how rules are executed via Use Cases.
-3. Explore **Infrastructure** to see how the system interacts with the real world.
-4. Run **Manual Tests** to observe the entire system in harmony.
+### 📖 Extensibility Guide
+Read more: [EXTENSIBILITY.md](file:///home/korosaki-ryukai/Workspace/Service/base_service/docs/EXTENSIBILITY.md)

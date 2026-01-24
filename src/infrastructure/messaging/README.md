@@ -1,6 +1,6 @@
-# 📣 Messaging - Giao tiếp Bất đồng bộ / Asynchronous Communication
+# 📣 Messaging - Giao tiếp Bất đồng bộ / Resilient Messaging Hub
 
-**Mục đích / Purpose**: Messaging là cơ chế cho phép các dịch vụ nói chuyện với nhau mà không cần chờ đợi phản hồi ngay lập tức. Điều này giúp hệ thống phản hồi người dùng nhanh hơn và hoạt động ổn định hơn dù có một vài thành phần bị lỗi. / Messaging enables services to communicate without waiting for immediate responses. This leads to faster user responses and increased system resilience, even if some components go offline.
+**Mục đích / Purpose**: Messaging là cơ chế cho phép các dịch vụ "nói chuyện" với nhau mà không cần chờ đợi. Nó giúp hệ thống ổn định hơn (Resilient) ngay cả khi một vài thành phần gặp sự cố. / Messaging allows services to communicate asynchronously, enhancing system resilience even when certain components are temporarily unavailable.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,24 +8,28 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Producer / Consumer**: Một bên gửi tin nhắn (Producer) và một bên nhận tin nhắn (Consumer). Chúng không cần biết nhau ở đâu, chỉ cần qua một "Hộp thư" (Queue).
-- **Fire and Forget**: Khi đơn hàng được đặt, API gửi một tin nhắn "Đã đặt hàng" vào Queue rồi trả kết quả cho khách luôn. Việc gửi mail hay sinh hóa đơn sẽ do các Worker xử lý sau đó.
-- **Reliability**: Nếu server gửi mail đang bận, tin nhắn vẫn nằm an toàn trong Queue cho đến khi server đó sẵn sàng xử lý.
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tại sao không gọi trực tiếp API gửi Mail? Vì nếu Mail Server chậm, API đặt hàng cũng sẽ chậm theo. Messaging giúp API đặt hàng trả kết quả ngay lập tức, còn việc gửi Mail sẽ được xử lý sau dướI nền.
+- **Why RabbitMQ?**: RabbitMQ cung cấp cơ chế hàng đợi (Queue) tin cậy, đảm bảo tin nhắn không bị mất ngay cả khi hệ thống bị khởi động lại.
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong dự án này:
-- `rabbitmq_publisher.py`: Đóng vai trò là Producer, đẩy các sự kiện `OrderPlaced` lên RabbitMQ để các dịch vụ khác (như Email, Kho) có thể tiêu thụ.
+### ⚠️ Ràng buộc (Constraints)
+1. **Idempotency**: Các Worker nhận tin nhắn phải có khả năng xử lý lặp lại (nếu tin nhắn bị gửi 2 lần) mà không gây sai lệch dữ liệu.
+2. **Error Handling**: Phải có cơ chế Retry hoặc Dead Letter Exchange (DLX) cho các tin nhắn bị lỗi.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **EventPublisher**: [RabbitMQ implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/messaging/rabbitmq_publisher.py) đẩy sự kiện sang các hệ thống khác xử lý.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Producer / Consumer**: One side sends messages (Producer) and the other receives them (Consumer). They don't need to know each other's location; they just use a shared "Mailbox" (Queue).
-- **Fire and Forget**: When an order is placed, the API drops an "Order Placed" message into the Queue and immediately responds to the user. Background workers handle email or invoice generation later.
-- **Reliability**: If the email server is busy, messages stay safe in the Queue until the server is ready to process them.
+### 📄 Context & Rationale
+- **Context**: Why not call the Mail API directly? If the Mail Server is slow, the Order API becomes slow too. Messaging allows the Order API to respond immediately, delegating mail delivery to background workers.
+- **Why RabbitMQ?**: RabbitMQ provides reliable queuing, ensuring messages are preserved even during system restarts.
 
-### 🏛️ Practical Example
-In this project:
-- `rabbitmq_publisher.py`: Acts as the Producer, pushing `OrderPlaced` events to RabbitMQ so other services (Email, Warehouse) can consume them.
+### ⚠️ Constraints
+1. **Idempotency**: Message consumers must handle duplicate messages gracefully without corrupting data.
+2. **Error Handling**: Must implement retry mechanisms or Dead Letter Exchanges (DLX) for failed messages.
+
+### 🏛️ Practical Examples
+- **EventPublisher**: [RabbitMQ implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/messaging/rabbitmq_publisher.py) broadcasts events to downstream consumers.

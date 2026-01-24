@@ -1,6 +1,6 @@
-# 🔄 Application Layer - Người Điều Phối / Use Case Orchestrator
+# 🔄 Application Layer - Tầng Điều Phối / Use Case Orchestration
 
-**Mục đích / Purpose**: Tầng Application đóng vai trò như một "nhà điều hành", kết nối giữa yêu cầu của người dùng và các quy tắc nghiệp vụ trong Domain. Nó không chứa logic nghiệp vụ cốt lõi nhưng biết cách điều phối chúng để hoàn thành một công việc cụ thể (Use Case). / The Application layer acts as an "operator", bridging user requests and domain business rules. It doesn't contain core business logic but knows how to orchestrate it to complete a specific task (Use Case).
+**Mục đích / Purpose**: Tầng Application đóng vai trò là "người điều phối". Nó không chứa logic nghiệp vụ nhưng biết cách triệu tập các Entity, Repository và Service để hoàn thành một yêu cầu của khách hàng (Use Case). / The Application layer acts as the "orchestrator". It contains no business logic itself but knows how to invoke Entities, Repositories, and Services to fulfill a specific customer request (Use Case).
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,24 +8,30 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Services (Use Cases)**: Các lớp chứa quy trình thực hiện một công việc (ví dụ: `Đặt hàng`). Nó sẽ gọi Repository để lấy dữ liệu, gọi Domain để kiểm tra luật, và gọi Publisher để thông báo kết quả.
-- **DTOs (Data Transfer Objects)**: Các đối tượng dùng để đóng gói dữ liệu khi di chuyển giữa các lớp (In/Out). Giúp bảo vệ tầng Domain khỏi các thay đổi của API Schema.
-- **Interfaces**: Các bản hợp đồng (Protocols) mà tầng Infrastructure phải tuân thủ.
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tầng này giống như một người quản lý dự án. Nó nhận yêu cầu, kiểm tra tài liệu (DTO), yêu cầu thợ (Entities) làm việc và báo cáo kết quả.
+- **Why DTO?**: Chúng ta dùng DTO để đảm bảo rằng nếu tầng Interface (API) thay đổi cấu trúc JSON, chúng ta không cần phải sửa đổi code xử lý bên trong.
 
-### 🏛️ Ví dụ thực tế (Example)
-- `PlaceOrderService`: Điều phối việc kiểm tra kho (Redis), lưu đơn hàng (PostgreSQL) và bắn sự kiện (RabbitMQ).
-- `src/application/dtos/`: Nơi định nghĩa các yêu cầu đầu vào (`Request`) và kết quả trả về (`Response`) cho người dùng.
+### ⚠️ Ràng buộc (Constraints)
+1. **No External Tech**: Không chứa code liên quan đến HTTP (FastAPI) hay Database cụ thể (SQL).
+2. **Stateless**: Các service nên là không trạng thái để có thể mở rộng dễ dàng.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **Use Case**: [PlaceOrderService](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/application/service/order_service.py) phối hợp luồng đặt hàng.
+- **Data Containers**: [OrderDTOs](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/application/dtos/order_dtos.py) đóng gói dữ liệu truyền tải.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Services (Use Cases)**: Classes containing the workflow for a specific task (e.g., `Place Order`). It calls Repositories for data, Domain for rules, and Publishers for notifications.
-- **DTOs (Data Transfer Objects)**: Objects used to package data moving between layers (In/Out). They protect the Domain layer from changes in the API schemas.
-- **Interfaces**: Contracts (Protocols) that the Infrastructure layer must implement.
+### 📄 Context & Rationale
+- **Context**: This layer is like a project manager. It receives a request, checks the paperwork (DTOs), asks the workers (Entities) to perform the task, and reports the outcome.
+- **Why DTO?**: We use DTOs to ensure that if the Interface (API) layer changes its JSON structure, the internal processing logic remains unaffected.
 
-### 🏛️ Practical Example
-- `PlaceOrderService`: Orchestrates stock checking (Redis), order persistence (PostgreSQL), and event publishing (RabbitMQ).
-- `src/application/dtos/`: Defines input requirements (`Request`) and expected results (`Response`) for the user.
+### ⚠️ Constraints
+1. **No External Tech**: No code related to HTTP (FastAPI) or specific Databases (SQL).
+2. **Stateless**: Services should be stateless to allow for easy scaling.
+
+### 🏛️ Practical Examples
+- **Use Case**: [PlaceOrderService](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/application/service/order_service.py) coordinates the order flow.
+- **Data Containers**: [OrderDTOs](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/application/dtos/order_dtos.py) package inter-layer data.

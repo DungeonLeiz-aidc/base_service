@@ -1,6 +1,6 @@
-# 🌐 Interface Layer - Cổng Giao Tiếp / Gateways & Entry Points
+# 🌐 Interface Layer - Điểm tiếp nhận Yêu cầu / The Entry Points
 
-**Mục đích / Purpose**: Tầng Interface là nơi hệ thống "mở cửa" đón nhận yêu cầu từ thế giới bên ngoài. Nó chịu trách nhiệm nhận dữ liệu, kiểm tra định dạng cơ bản và chuyển đổi chúng thành các yêu cầu mà tầng Application có thể hiểu được. / The Interface layer provides entry points for external requests. It is responsible for receiving data, basic validation, and converting it into requests that the Application layer can process.
+**Mục đích / Purpose**: Tầng Interface là "mặt tiền" của ứng dụng. Nó chịu trách nhiệm nhận yêu cầu từ bên ngoài (HTTP, CLI, Events), kiểm tra tính hợp lệ và chuyển tiếp chúng vào tầng Application. / The Interface layer is the system's "façade". It receives external requests (HTTP, CLI, Events), validates them, and forwards them to the Application layer.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,28 +8,30 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Drivers (Entry Points)**: Các phương thức khác nhau để khởi động một Use Case (ví dụ: HTTP Request, CLI Command, Message từ Queue).
-- **Schemas**: Định nghĩa hợp đồng dữ liệu với người dùng (Input/Output). Khác với DTO, Schemas thường chứa các ràng buộc của framework (như Pydantic cho FastAPI).
-- **Middlewares**: Các bộ lọc xử lý chung cho mọi yêu cầu (Logging, Auth, Error Handling).
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tại sao không gọi thẳng Service từ Route? Việc tách biệt giúp chúng ta có thể hỗ trợ nhiều loại Interface (Vd: vừa có Web API, vừa có CLI) mà không cần viết lại logic xử lý.
+- **Why Global Exception Handling?**: Chúng ta tập trung việc xử lý lỗi ở Middleware để đảm bảo người dùng luôn nhận được phản hồi JSON chuẩn, ngay cả khi có lỗi hệ thống nghiêm trọng.
 
-### 🏛️ Ví dụ thực tế (Example)
-Trong dự án này:
-- `http/`: Chứa các API RESTful xây dựng bằng FastAPI.
-- `cli/`: Chứa các lệnh quản trị hệ thống (`Typer`).
-- `worker.py`: Tiến trình nền lắng nghe sự kiện từ RabbitMQ để thực hiện các tác vụ nặng.
+### ⚠️ Ràng buộc (Constraints)
+1. **Request/Response Only**: Chỉ lo việc chuyển đổi dữ liệu (Mapping Pydantic <-> DTO). Không được thực hiện Business Logic ở đây.
+2. **Versioning Required**: Luôn sử dụng prefix version (vd: `/v1/`) để đảm bảo tính ổn định.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **API**: [Orders API](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/api/v1/orders.py) định nghĩa các endpoint REST.
+- **Middlewares**: [Global Error Handler](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/error_handler.py) bảo vệ hệ thống.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Drivers (Entry Points)**: Different ways to trigger a Use Case (e.g., HTTP Request, CLI Command, Message from a Queue).
-- **Schemas**: Define data contracts with users (Input/Output). Unlike DTOs, Schemas often contain framework-specific constraints (like Pydantic for FastAPI).
-- **Middlewares**: Filters for common request processing (Logging, Auth, Error Handling).
+### 📄 Context & Rationale
+- **Context**: Why separate Routes from Services? This allows supporting multiple interfaces (e.g., both Web API and CLI) without duplicating core logic.
+- **Why Global Exception Handling?**: Centralizing error handling in Middleware ensures users always receive standardized JSON responses, even during critical failures.
 
-### 🏛️ Practical Example
-In this project:
-- `http/`: Contains RESTful APIs built with FastAPI.
-- `cli/`: Contains administration commands built with `Typer`.
-- `worker.py`: Background process listening to RabbitMQ events for heavy lifting tasks.
+### ⚠️ Constraints
+1. **Request/Response Only**: Handles data translation (Pydantic <-> DTO). Business logic is strictly forbidden here.
+2. **Versioning Required**: Always use version prefixes (e.g., `/v1/`) to maintain backward compatibility.
+
+### 🏛️ Practical Examples
+- **API**: [Orders API](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/api/v1/orders.py) defines REST endpoints.
+- **Middlewares**: [Global Error Handler](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/error_handler.py) shields the system.

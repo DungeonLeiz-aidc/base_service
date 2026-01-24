@@ -1,6 +1,6 @@
-# 🏆 Repository Pattern - Trừu tượng hóa Dữ liệu / Data Abstraction
+# 🏆 Repository Pattern - Trừu tượng hóa Dữ liệu / Data Access Abstraction
 
-**Mục đích / Purpose**: Repository đóng vai trò như một bộ sưu tập (collection) các đối tượng Domain trong bộ nhớ. Nó ẩn đi toàn bộ sự phức tạp của việc truy vấn SQL hay các chi tiết của database. / The Repository pattern acts as a collection of Domain objects in memory. It hides all the complexity of SQL queries and database details.
+**Mục đích / Purpose**: Repository đóng vai trò như một bộ sưu tập (collection) các đối tượng Domain trong bộ nhớ. Nó ẩn đi sự phức tạp của việc truy vấn SQL và chuyển đổi dữ liệu. / The Repository pattern acts as an in-memory collection of Domain objects, hiding the complexities of SQL queries and data mapping.
 
 Tiếng Việt | [English](#-english-version)
 
@@ -8,22 +8,28 @@ Tiếng Việt | [English](#-english-version)
 
 ## 🇻🇳 Tiếng Việt
 
-### 📄 Khái niệm Cốt lõi
-- **Trừu tượng hóa**: Tầng Application chỉ gọi các phương thức như `save()` hay `get_by_id()` mà không cần biết bên dưới là PostgreSQL, MySQL hay thậm chí là lưu file.
-- **Ánh xạ (Mapping)**: Chuyển đổi từ Database Models (ORM) sang Domain Entities và ngược lại. Điều này giúp Domain Layer luôn "sạch", không bị dính mã của framework như SQLAlchemy.
+### 📄 Bối cảnh & Tư duy (Context & Why)
+- **Context**: Tại sao không dùng thẳng `session.query()` trong Service? Vì nếu làm vậy, Service sẽ bị "dính chặt" vào SQLAlchemy. Repository giúp Service chỉ cần nói "Cho tôi đơn hàng 123", còn lấy như thế nào là việc của Infrastructure.
+- **Why Mapping?**: Đây là nơi chúng ta biến những hàng (rows) khô khan của database thành những đối tượng Domain mạnh mẽ, sẵn sàng cho nghiệp vụ.
 
-### 🏛️ Ví dụ thực tế (Example)
-- `order_repository.py`: Sử dụng `AsyncSession` của SQLAlchemy để thực hiện các thao tác Unit of Work.
-- `src/domain/repositories/interfaces.py`: Nơi định nghĩa các "bản hợp đồng" mà Repository này phải thực hiện.
+### ⚠️ Ràng buộc (Constraints)
+1. **Contract Fulfillment**: Phải triển khai chính xác các Interface đã định nghĩa tại `src/domain/interfaces/`.
+2. **No Business Logic**: Repository không được ra quyết định nghiệp vụ (vd: tính tiền), nó chỉ lo việc lưu và lấy.
+
+### 🏛️ Ví dụ thực tế (Examples)
+- **OrderRepository**: [Implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/order_repository.py) sử dụng `AsyncSession` để ghi dữ liệu xuống Postgres.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 📄 Core Concepts
-- **Abstraction**: The Application layer only calls methods like `save()` or `get_by_id()` without knowing if the underlying storage is PostgreSQL, MySQL, or even a local file.
-- **Mapping**: Converts Database Models (ORM) to Domain Entities and vice versa. This keeps the Domain Layer "clean" and free from framework-specific code like SQLAlchemy.
+### 📄 Context & Rationale
+- **Context**: Why not use `session.query()` directly in the Service? Doing so tightly couples the Service to SQLAlchemy. Repositories allow the Service to simply ask for "Order 123", leaving the "how" to the Infrastructure layer.
+- **Why Mapping?**: This is where dry database rows are transformed into rich Domain objects ready for business logic.
 
-### 🏛️ Practical Example
-- `order_repository.py`: Uses SQLAlchemy's `AsyncSession` to perform Unit of Work operations.
-- `src/domain/repositories/interfaces.py`: Defines the "contracts" that this Repository must fulfill.
+### ⚠️ Constraints
+1. **Contract Fulfillment**: Must strictly implement interfaces defined in `src/domain/interfaces/`.
+2. **No Business Logic**: Repositories must not make business decisions (e.g., pricing); their sole responsibility is persistence and retrieval.
+
+### 🏛️ Practical Examples
+- **OrderRepository**: [Implementation](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/infrastructure/repositories/order_repository.py) uses `AsyncSession` to persist data to Postgres.

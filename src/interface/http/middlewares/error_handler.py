@@ -13,6 +13,7 @@ from src.domain.exceptions import (
     ProductNotFoundError,
     InsufficientStockError,
     OrderValidationError,
+    DomainException,
 )
 
 
@@ -30,13 +31,11 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-async def domain_exception_handler(request: Request, exc: Exception):
+async def domain_exception_handler(request: Request, exc: DomainException):
     """
     Handler for specialized domain exceptions.
+    Maps business invariants violations to specific HTTP status codes.
     """
-    status_code = status.HTTP_400_BAD_REQUEST
-    error_type = "domain_error"
-    
     if isinstance(exc, ProductNotFoundError):
         status_code = status.HTTP_404_NOT_FOUND
         error_type = "product_not_found"
@@ -45,9 +44,12 @@ async def domain_exception_handler(request: Request, exc: Exception):
         error_type = "insufficient_stock"
     elif isinstance(exc, OrderValidationError):
         status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
-        error_type = "validation_error"
+        error_type = "order_validation_error"
+    else:
+        status_code = status.HTTP_400_BAD_REQUEST
+        error_type = "domain_error"
         
-    logger.warning(f"Domain exception: {exc}")
+    logger.warning(f"Domain invariant violation: {exc} | Type: {error_type}")
     
     return JSONResponse(
         status_code=status_code,
