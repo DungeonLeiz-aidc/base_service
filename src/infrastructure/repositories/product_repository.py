@@ -70,16 +70,60 @@ class ProductRepository(IProductRepository):
         
         return [self._to_entity(model) for model in models]
     
+    async def list_products(
+        self, 
+        skip: int = 0, 
+        limit: int = 10, 
+        search: Optional[str] = None
+    ) -> List[Product]:
+        """
+        List products with pagination and search.
+        Fulfills 'Filtering & Pagination' core responsibility.
+        """
+        logger.debug(f"AUDIT | Fetching product page | Skip: {skip} | Limit: {limit} | Search: {search}")
+        
+        stmt = select(ProductModel).offset(skip).limit(limit)
+        
+        if search:
+            stmt = stmt.where(ProductModel.name.ilike(f"%{search}%"))
+            
+        result = await self.session.execute(stmt)
+        models = result.scalars().all()
+        
+        return [self._to_entity(model) for model in models]
+
+    async def delete(self, product_id: int) -> bool:
+        """
+        Delete product by ID.
+        Fulfills 'Delete' operation responsibility.
+        """
+        logger.warning(f"AUDIT | START | Deleting product ID: {product_id}")
+        
+        model = await self._get_model_by_id(product_id)
+        if model:
+            await self.session.delete(model)
+            await self.session.flush()
+            logger.info(f"AUDIT | SUCCESS | Deleted product ID: {product_id}")
+            return True
+            
+        logger.warning(f"AUDIT | FAILED | Product {product_id} not found for deletion")
+        return False
+
     async def save(self, product: Product) -> Product:
-        """Save product (create or update)."""
+        """
+        Save product (create or update).
+        
+        Persists the Product domain entity to the PostgreSQL database.
+        Fulfills 'Create/Update' operations and 'Data Abstraction' responsibilities.
+        """
         if product.id is None:
             # Create new
-            logger.debug(f"Creating new product: {product.sku}")
+            logger.debug(f"AUDIT | Creating new product: {product.sku}")
             model = self._to_model(product)
             self.session.add(model)
         else:
             # Update existing
-            logger.debug(f"Updating product: {product.id}")
+            logger.debug(f"AUDIT | Updating product ID: {product.id}")
             model = await self._get_model_by_id(product.id)
             if model is None:
                 raise ValueError(f"Product {product.id} not found for update")
@@ -92,8 +136,13 @@ class ProductRepository(IProductRepository):
         return self._to_entity(model)
     
     async def update_stock(self, product_id: int, quantity_delta: int) -> None:
-        """Update product stock quantity."""
-        logger.debug(f"Updating stock for product {product_id}: delta={quantity_delta}")
+        """
+        Update product stock quantity.
+        
+        Atomically adjusts stock level in the database.
+        Fulfills 'Atomic Operations' and 'Query Encapsulation' responsibilities.
+        """
+        logger.debug(f"AUDIT | Updating stock | Product: {product_id} | Delta: {quantity_delta}")
         
         model = await self._get_model_by_id(product_id)
         if model is None:
@@ -109,7 +158,10 @@ class ProductRepository(IProductRepository):
         return result.scalar_one_or_none()
     
     def _to_entity(self, model: ProductModel) -> Product:
-        """Convert ORM model to domain entity."""
+        """
+        Convert ORM model to domain entity.
+        Fulfills 'Data Mapping' responsibility.
+        """
         return Product(
             id=model.id,
             sku=model.sku,

@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     """
     # 1. Initialize logging
     setup_logging(settings)
-    logger.info(f"AUDIT | START | {settings.PROJECT_NAME} starting...")
+    logger.info(f"SYSTEM | START | {settings.PROJECT_NAME} starting...")
     
     container = get_container()
     
@@ -32,15 +32,15 @@ async def lifespan(app: FastAPI):
         # 2. Connect to Infrastructure
         try:
             await container.event_publisher.connect()
-            logger.info("AUDIT | SUCCESS | Connected to RabbitMQ.")
+            logger.info("SYSTEM | SUCCESS | Connected to RabbitMQ")
         except Exception as e:
-            logger.error(f"AUDIT | FAILED | RabbitMQ connection: {e}")
+            logger.error(f"SYSTEM | FAILED | RabbitMQ connection: {e}")
         
         yield
         
     finally:
         # 3. Defensive Cleanup (Execution guaranteed on Ctrl+C)
-        logger.info(f"AUDIT | SHUTDOWN | {settings.PROJECT_NAME} stopping...")
+        logger.info(f"SYSTEM | SHUTDOWN | {settings.PROJECT_NAME} stopping...")
         try:
             # Centralized disposal of DB, Redis, Messaging, and Logger
             await container.dispose()

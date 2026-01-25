@@ -105,7 +105,7 @@ class RedisInventoryCache(IInventoryCache):
                 new_stock = current_stock - quantity
                 await self.redis.set(stock_key, new_stock)
                 
-                logger.info(f"Reserved {quantity} units of product {product_id}")
+                logger.info(f"AUDIT | SUCCESS | Reserved {quantity} units of product {product_id}")
                 return True
                 
             finally:
@@ -120,4 +120,4 @@ class RedisInventoryCache(IInventoryCache):
         """Release reserved stock (increment)."""
         stock_key = self._get_stock_key(product_id)
         new_stock = await self.redis.incrby(stock_key, quantity)
-        logger.info(f"Released {quantity} units of product {product_id}. New stock: {new_stock}")
+        logger.info(f"AUDIT | SUCCESS | Released {quantity} units of product {product_id}. New stock: {new_stock}")

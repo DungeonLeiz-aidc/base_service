@@ -37,7 +37,7 @@ class RabbitMQPublisher(IEventPublisher):
     
     async def connect(self) -> None:
         """Establish connection to RabbitMQ."""
-        logger.info(f"Connecting to RabbitMQ: {self.rabbitmq_url}")
+        logger.info(f"AUDIT | Connecting to RabbitMQ")
         self.connection = await connect(self.rabbitmq_url)
         self.channel = await self.connection.channel()
         self.exchange = await self.channel.declare_exchange(
@@ -45,13 +45,13 @@ class RabbitMQPublisher(IEventPublisher):
             self.exchange_type,
             durable=True,
         )
-        logger.info(f"Connected to RabbitMQ exchange: {self.exchange_name}")
+        logger.info(f"AUDIT | SUCCESS | Connected to RabbitMQ exchange: {self.exchange_name}")
     
     async def close(self) -> None:
         """Close RabbitMQ connection."""
         if self.connection:
             await self.connection.close()
-            logger.info("Closed RabbitMQ connection")
+            logger.info("AUDIT | CLOSED | RabbitMQ connection")
     
     async def publish(self, event: Any) -> None:
         """Publish domain event to RabbitMQ."""
@@ -70,4 +70,4 @@ class RabbitMQPublisher(IEventPublisher):
         
         routing_key = event_type
         await self.exchange.publish(message, routing_key=routing_key)
-        logger.info(f"Published event: {event_type} with routing key: {routing_key}")
+        logger.info(f"AUDIT | SUCCESS | Published event: {event_type}")

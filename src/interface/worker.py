@@ -13,19 +13,19 @@ from src.container import get_container
 async def process_messages():
     """
     Skeleton logic for background message processing.
-    In a real system, this would listen to RabbitMQ queues.
+    In a real system, this would listen to RabbitMQ queues for order events.
     """
-    logger.info("Starting background worker...")
+    logger.info("AUDIT | START | Background worker starting...")
     
-    # Example logic
+    # Example logic for consuming events
     while True:
         try:
             # Here you would listen to RabbitMQ
             # await consume_events()
             await asyncio.sleep(60)
-            logger.debug("Worker heartbeat")
+            logger.debug("AUDIT | HEARTBEAT | Worker is alive")
         except Exception as e:
-            logger.error(f"Worker error: {e}")
+            logger.error(f"AUDIT | FAILED | Worker processing error: {e}")
             await asyncio.sleep(5)
 
 

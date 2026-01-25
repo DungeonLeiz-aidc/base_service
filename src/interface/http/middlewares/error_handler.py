@@ -20,8 +20,9 @@ from src.domain.exceptions import (
 async def global_exception_handler(request: Request, exc: Exception):
     """
     Global catch-all exception handler.
+    Logs the error with AUDIT | prefix and returns a safe 500 response.
     """
-    logger.error(f"Uncaught exception: {exc}")
+    logger.error(f"AUDIT | FAILED | Uncaught exception: {exc}")
     
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -34,7 +35,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def domain_exception_handler(request: Request, exc: DomainException):
     """
     Handler for specialized domain exceptions.
-    Maps business invariants violations to specific HTTP status codes.
+    Maps business invariants violations to specific HTTP status codes with AUDIT logging.
     """
     if isinstance(exc, ProductNotFoundError):
         status_code = status.HTTP_404_NOT_FOUND
@@ -49,7 +50,7 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         status_code = status.HTTP_400_BAD_REQUEST
         error_type = "domain_error"
         
-    logger.warning(f"Domain invariant violation: {exc} | Type: {error_type}")
+    logger.warning(f"AUDIT | FAILED | Domain invariant violation: {exc} | Type: {error_type}")
     
     return JSONResponse(
         status_code=status_code,

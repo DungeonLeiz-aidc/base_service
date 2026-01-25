@@ -24,8 +24,21 @@ class IProductRepository(Protocol):
         """Get multiple products by IDs."""
         ...
     
+    async def list_products(
+        self, 
+        skip: int = 0, 
+        limit: int = 10, 
+        search: Optional[str] = None
+    ) -> List[Product]:
+        """List products with pagination and search."""
+        ...
+    
     async def save(self, product: Product) -> Product:
-        """Save product."""
+        """Save product (create or update)."""
+        ...
+    
+    async def delete(self, product_id: int) -> bool:
+        """Delete product by ID."""
         ...
     
     async def update_stock(self, product_id: int, quantity_delta: int) -> None:
@@ -40,12 +53,21 @@ class IOrderRepository(Protocol):
         """Get order by ID."""
         ...
     
-    async def get_by_customer_id(self, customer_id: int) -> List[Order]:
-        """Get all orders for a customer."""
+    async def get_by_customer_id(
+        self, 
+        customer_id: int, 
+        skip: int = 0, 
+        limit: int = 10
+    ) -> List[Order]:
+        """Get paged orders for a customer."""
         ...
     
     async def save(self, order: Order) -> Order:
-        """Save order."""
+        """Save order (create or update)."""
+        ...
+    
+    async def delete(self, order_id: int) -> bool:
+        """Delete order by ID."""
         ...
     
     async def update_status(self, order_id: int, status: str) -> None:

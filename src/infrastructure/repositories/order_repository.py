@@ -51,14 +51,24 @@ class OrderRepository(IOrderRepository):
         
         return self._to_entity(model)
     
-    async def get_by_customer_id(self, customer_id: int) -> List[Order]:
-        """Get all orders for a customer."""
-        logger.debug(f"Fetching orders for customer: {customer_id}")
+    async def get_by_customer_id(
+        self, 
+        customer_id: int, 
+        skip: int = 0, 
+        limit: int = 10
+    ) -> List[Order]:
+        """
+        Get paged orders for a customer.
+        Fulfills 'Filtering & Pagination' responsibility.
+        """
+        logger.debug(f"AUDIT | Fetching orders for customer: {customer_id} | Skip: {skip} | Limit: {limit}")
         
         stmt = (
             select(OrderModel)
             .options(selectinload(OrderModel.items))
             .where(OrderModel.customer_id == customer_id)
+            .offset(skip)
+            .limit(limit)
             .order_by(OrderModel.created_at.desc())
         )
         result = await self.session.execute(stmt)
@@ -66,16 +76,38 @@ class OrderRepository(IOrderRepository):
         
         return [self._to_entity(model) for model in models]
     
+    async def delete(self, order_id: int) -> bool:
+        """
+        Delete order by ID.
+        Fulfills 'Delete' operation responsibility.
+        """
+        logger.warning(f"AUDIT | START | Deleting order ID: {order_id}")
+        
+        model = await self._get_model_by_id(order_id)
+        if model:
+            await self.session.delete(model)
+            await self.session.flush()
+            logger.info(f"AUDIT | SUCCESS | Deleted order ID: {order_id}")
+            return True
+            
+        logger.warning(f"AUDIT | FAILED | Order {order_id} not found for deletion")
+        return False
+
     async def save(self, order: Order) -> Order:
-        """Save order (create or update)."""
+        """
+        Save order (create or update).
+        
+        Persists the Order domain entity and its items to PostgreSQL.
+        Fulfills 'Create/Update' operations and 'Data Abstraction' responsibilities.
+        """
         if order.id is None:
             # Create new
-            logger.debug(f"Creating new order for customer {order.customer_id}")
+            logger.debug(f"AUDIT | Creating new order for customer {order.customer_id}")
             model = self._to_model(order)
             self.session.add(model)
         else:
             # Update existing
-            logger.debug(f"Updating order: {order.id}")
+            logger.debug(f"AUDIT | Updating order ID: {order.id}")
             model = await self._get_model_by_id(order.id)
             if model is None:
                 raise ValueError(f"Order {order.id} not found for update")
@@ -88,8 +120,13 @@ class OrderRepository(IOrderRepository):
         return self._to_entity(model)
     
     async def update_status(self, order_id: int, status: str) -> None:
-        """Update order status."""
-        logger.debug(f"Updating order {order_id} status to: {status}")
+        """
+        Update order status.
+        
+        Directly updates the status field of an existing order.
+        Fulfills 'Query Encapsulation' responsibility.
+        """
+        logger.debug(f"AUDIT | Updating order {order_id} status to: {status}")
         
         model = await self._get_model_by_id(order_id)
         if model is None:
@@ -109,7 +146,10 @@ class OrderRepository(IOrderRepository):
         return result.scalar_one_or_none()
     
     def _to_entity(self, model: OrderModel) -> Order:
-        """Convert ORM model to domain entity."""
+        """
+        Convert ORM model to domain entity.
+        Fulfills 'Data Mapping' responsibility.
+        """
         order_items = [
             OrderItem(
                 product_id=item.product_id,

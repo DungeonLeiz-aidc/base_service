@@ -41,6 +41,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         return data
 
     async def dispatch(self, request: Request, call_next):
+        """
+        Intercepts the request/response cycle to log vital traffic information.
+        """
         start_time = time.time()
         
         # Capture basic info
@@ -51,17 +54,14 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         # Mask sensitive query params
         masked_query = self._mask_pii(query_params)
         
-        logger.info(f"Incoming request: {method} {path} | Params: {masked_query}")
-        
-        # We don't log body here by default to avoid performance hit and complex stream handling
-        # but the masking infrastructure is ready for it.
+        logger.info(f"HTTP | REQUEST | {method} {path} | Params: {masked_query}")
         
         response = await call_next(request)
         
         process_time = (time.time() - start_time) * 1000
         
         logger.info(
-            f"Response: {method} {path} | Status: {response.status_code} | "
+            f"HTTP | RESPONSE | {method} {path} | Status: {response.status_code} | "
             f"Duration: {process_time:.2f}ms"
         )
         

@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Any
 
 
 class OrderStatus(str, Enum):
@@ -66,10 +66,26 @@ class Order:
     status: OrderStatus = OrderStatus.PENDING
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
+    _events: List[Any] = field(default_factory=list, repr=False, init=False)
     
     def __post_init__(self) -> None:
-        """Validate order invariants after initialization."""
+        """
+        Validate order invariants after initialization.
+        Fulfills 'Self-Validation' responsibility.
+        """
         self._validate()
+    
+    def clear_events(self) -> None:
+        """Clear recorded domain events."""
+        self._events.clear()
+        
+    def get_events(self) -> List[Any]:
+        """Get copy of recorded domain events."""
+        return list(self._events)
+        
+    def _record_event(self, event: Any) -> None:
+        """Internal helper to record domain events."""
+        self._events.append(event)
     
     def _validate(self) -> None:
         """
@@ -129,17 +145,20 @@ class Order:
     def confirm(self) -> None:
         """
         Confirm the order (payment successful, stock reserved).
-        
-        Raises:
-            ValueError: If order cannot be confirmed.
+        Fulfills 'State Transitions' and 'Domain Event Emission' responsibilities.
         """
         if not self.can_transition_to(OrderStatus.CONFIRMED):
-            raise ValueError(
-                f"Cannot confirm order with status {self.status.value}"
-            )
+            raise ValueError(f"Cannot confirm order with status {self.status.value}")
         
         self.status = OrderStatus.CONFIRMED
         self.updated_at = datetime.now(timezone.utc)
+        
+        from src.domain.events.order_events import OrderConfirmed
+        self._record_event(OrderConfirmed(
+            order_id=self.id or 0,
+            customer_id=self.customer_id,
+            confirmed_at=self.updated_at
+        ))
     
     def start_processing(self) -> None:
         """

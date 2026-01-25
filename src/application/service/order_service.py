@@ -76,47 +76,57 @@ class PlaceOrderService:
             InventoryLockError: If unable to acquire inventory lock.
         """
         logger.info(
-            f"Placing order for customer {request.customer_id} "
+            f"AUDIT | START | Placing order for customer {request.customer_id} "
             f"with {len(request.items)} items"
         )
         
         reserved_items: List[tuple[int, int]] = []  # (product_id, quantity)
         
         try:
-            # Step 1: Fetch and validate products
-            logger.debug("Step 1: Validating products")
+            # Step 1: Fetch and validate products (Workflow)
+            logger.debug("STEP 1 | Validating products")
             products = await self._fetch_and_validate_products(request)
             
             # Step 2: Check and reserve inventory
-            logger.debug("Step 2: Reserving inventory")
+            logger.debug("STEP 2 | Reserving inventory")
             reserved_items = await self._reserve_inventory(request, products)
             
             # Step 3: Create order entity
-            logger.debug("Step 3: Creating order entity")
+            logger.debug("STEP 3 | Creating order entity")
             order = self._create_order_entity(request, products)
             
             # Step 4: Persist order
-            logger.debug("Step 4: Persisting order to database")
+            logger.debug("STEP 4 | Persisting order to database")
             saved_order = await self.order_repo.save(order)
             
-            # Step 5: Publish OrderPlaced event
-            logger.debug("Step 5: Publishing OrderPlaced event")
+            # Step 5: Publish Side Effects
+            logger.debug("STEP 5 | Publishing OrderPlaced event")
             await self._publish_order_placed_event(saved_order)
             
-            logger.info(
-                f"Order {saved_order.id} placed successfully for customer "
+            logger.success(
+                f"AUDIT | SUCCESS | Order {saved_order.id} placed for customer "
                 f"{request.customer_id}. Total: {saved_order.total_amount}"
             )
             
             return OrderResponseDTO.from_entity(saved_order)
             
+        except (ProductNotFoundError, InsufficientStockError) as e:
+            # Domain Errors are already friendly, just re-raise
+            logger.warning(f"AUDIT | BUSINESS_ERROR | {e}")
+            await self._rollback_reservations(reserved_items)
+            raise e
+            
         except Exception as e:
-            # Rollback: Release all reserved inventory
-            logger.error(f"Order placement failed: {e}. Rolling back reservations.")
+            # Step 6: Error Translation (Fulfills Core Responsibility 4)
+            logger.error(f"AUDIT | FAILED | Unexpected error: {e}. Starting rollback.")
             await self._rollback_reservations(reserved_items)
             
-            # Publish OrderFailed event
-            await self._publish_order_failed_event(request.customer_id, str(e))
+            # Wrap technical error into a business-level failure
+            error_msg = f"System error during order placement: {str(e)}"
+            await self._publish_order_failed_event(request.customer_id, error_msg)
+            
+            # We raise a Domain-level exception for the Interface layer to handle
+            raise OrderValidationError(error_msg)
             
             # Re-raise the exception
             raise
