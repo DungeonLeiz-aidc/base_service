@@ -13,7 +13,7 @@ from loguru import logger
 from src.infrastructure.repositories import ProductRepository, OrderRepository
 from src.infrastructure.caching.redis_inventory_cache import RedisInventoryCache
 from src.infrastructure.messaging.rabbitmq_publisher import RabbitMQPublisher
-from src.infrastructure.clients.auth_provider import JWTAuthProvider
+from src.infrastructure.clients.auth_provider import AuthProvider
 from src.application.service import PlaceOrderService, SeedService
 from configs.service_config import settings
 
@@ -47,10 +47,10 @@ class AppContainer:
         # Infrastructure Clients
         self.inventory_cache = RedisInventoryCache(self.redis)
         self.event_publisher = RabbitMQPublisher(settings.RABBITMQ_URL)
-        self.auth_provider = JWTAuthProvider(
-            secret_key=settings.SECRET_KEY,
-            algorithm=settings.ALGORITHM,
-            access_token_expire_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        self.auth_provider = AuthProvider(
+            base_url=settings.AUTH_SERVICE_URL,
+            api_key=settings.INTERNAL_API_KEY,
+            jwt_secret=settings.SUPABASE_JWT_SECRET
         )
         
     @classmethod

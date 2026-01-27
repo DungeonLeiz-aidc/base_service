@@ -12,9 +12,9 @@ services:
     ports:
       - "8000:8000"
 
-    # Load các biến môi trường từ file .env.docker
+    # Load các biến môi trường từ file .env
     env_file:
-      - .env.docker
+      - .env
 
     # Điều kiện khởi chạy: Chỉ chạy app sau khi db, redis, rabbitmq đã vượt qua bước healthcheck
     depends_on:

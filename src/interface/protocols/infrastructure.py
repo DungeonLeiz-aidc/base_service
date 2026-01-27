@@ -33,10 +33,10 @@ class IEventPublisher(Protocol):
 class IAuthProvider(Protocol):
     """Protocol for authentication provider."""
     
-    def create_access_token(self, data: dict) -> str:
-        """Create a new JWT access token."""
-        ...
-    
-    def verify_token(self, token: str) -> dict:
+    async def verify_token(self, token: str) -> dict:
         """Verify a JWT token and return the payload."""
+        ...
+
+    async def authorize(self, token: str, required_permission: str) -> bool:
+        """Check if a user has a specific permission via central Auth Service."""
         ...
