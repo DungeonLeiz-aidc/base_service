@@ -1,53 +1,147 @@
-version: '3.8'
+version: '3.8' # Phiên bản Docker Compose, 3.8 là bản ổn định hỗ trợ tốt deploy resources
 
 services:
   app:
+    # Tên container cố định giúp dễ dàng audit log và quản lý qua CLI/GUI
+    container_name: oms-app
+
+    # Xây dựng image từ Dockerfile trong thư mục hiện tại
     build: .
+
+    # Ánh xạ cổng: [Máy Host]:[Container]
     ports:
       - "8000:8000"
+
+    # Load các biến môi trường từ file .env.docker
     env_file:
       - .env.docker
+
+    # Điều kiện khởi chạy: Chỉ chạy app sau khi db, redis, rabbitmq đã vượt qua bước healthcheck
     depends_on:
-      - db
-      - redis
-      - rabbitmq
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+    # Gắn vào mạng ảo oms-network để các service nhìn thấy nhau qua hostname
     networks:
       - oms-network
 
+    # Tự động khởi động lại trừ khi bạn chủ động dừng (stop)
+    restart: unless-stopped
+
+    # Mount Volume chuyên nghiệp cho môi trường phát triển (Hot-reload & Logs)
+    volumes:
+      - .:/app # Mount toàn bộ thư mục dự án để hỗ trợ Hot-reload
+      - ./logs:/app/logs # Bind mount logs ra máy host để dễ dàng theo dõi/audit
+
+    # Quản lý tài nguyên: Giúp hệ thống 32GB RAM của bạn không bị treo nếu app leak memory
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50' # Giới hạn tối đa 50% CPU 1 core
+          memory: 512M # Giới hạn tối đa 512MB RAM
+        reservations:
+          cpus: '0.25' # Đảm bảo luôn có ít nhất 25% CPU
+          memory: 256M # Đảm bảo luôn dành sẵn 256MB RAM
+
+    # Ánh xạ host.docker.internal về IP của máy Ubuntu (hữu ích cho kết nối ngược)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # Chạy container dưới UID:GID 1000 (khớp với user korosaki-ryukai trên máy bạn) để tránh lỗi Permission
+    user: "1000:1000"
+
+    # Kiểm tra trạng thái thực sự của ứng dụng qua HTTP endpoint
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health || exit 1" ]
+      interval: 30s # Cứ mỗi 30 giây kiểm tra một lần
+      timeout: 10s # Quá 10 giây không phản hồi coi như lỗi
+      retries: 3 # Thử lại tối đa 3 lần trước khi đánh dấu Unhealthy
+      start_period: 10s # Đợi 10 giây lúc khởi động mới bắt đầu check
+
   db:
-    image: postgres:15-alpine
+    container_name: oms-db
+    image: postgres:15-alpine # Sử dụng bản Alpine siêu nhẹ và 15 ổn định
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: oms_db
     ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "5433:5432" # Dùng cổng 5433 trên host để tránh xung đột với Postgres cài sẵn (nếu có)
     networks:
       - oms-network
+    restart: unless-stopped
+    # Mount volume để dữ liệu không bị mất khi xóa container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    # Kiểm tra DB đã thực sự sẵn sàng nhận kết nối hay chưa
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d oms_db" ]
+      interval: 100s
+      timeout: 5s
+      retries: 5
 
   redis:
+    container_name: oms-redis
     image: redis:7-alpine
     ports:
       - "6380:6379"
     networks:
       - oms-network
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    container_name: oms-rabbitmq
+    image: rabbitmq:3-management-alpine # Có sẵn giao diện Management Web UI
     ports:
-      - "5673:5672"
-      - "15673:15672"
+      - "5673:5672" # Cổng kết nối MQ
+      - "15673:15672" # Cổng giao diện Web (http://localhost:15673)
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     networks:
       - oms-network
+    restart: unless-stopped
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q check_running" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 networks:
+  # Mạng cầu (bridge) giúp cô lập các service của OMS
   oms-network:
     driver: bridge
 
 volumes:
+  # Tên volume với "name" định danh rõ ràng giúp quản lý chuyên nghiệp trong GUI/CLI
   postgres_data:
+    name: oms_postgres_storage
+  rabbitmq_data:
+    name: oms_rabbitmq_storage
+  redis_data:
+    name: oms_redis_storage
