@@ -1,0 +1,37 @@
+# Traefik SSL Termination Config (YAML)
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: your-email@example.com
+      storage: acme.json
+      httpChallenge:
+        entryPoint: web
+
+http:
+  routers:
+    to-chatbot:
+      rule: "Host(`api.yourservice.com`)"
+      service: chatbot-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+  services:
+    chatbot-service:
+      loadBalancer:
+        servers:
+          - url: "http://chatbot-service:8000"

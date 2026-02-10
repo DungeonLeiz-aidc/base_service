@@ -19,7 +19,7 @@ Tiếng Việt | [English](#-english-version)
 ```text
 http/
 ├── api/                # Định nghĩa các Route và logic điều hướng API.
-├── middlewares/        # Các bộ canh gác (Logging, Security, Error Handlers).
+├── middlewares/        # Các bộ canh gác (Logging, Security, Error Handlers, HTTPS Redirect).
 └── __init__.py         # Khởi tạo mô-đun HTTP.
 ```
 
@@ -34,7 +34,7 @@ http/
 
 ### 🏛️ Ví dụ thực tế (Examples)
 - **API**: Xem [api/v1/router.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/api/v1/router.py).
-- **Middleware**: [logging_middleware.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/logging_middleware.py) canh gác dữ liệu.
+- **Middleware**: [logging_middleware.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/logging_middleware.py) canh gác dữ liệu và [redirect.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/redirect.py) ép buộc HTTPS.
 
 ---
 
@@ -51,7 +51,7 @@ http/
 ```text
 http/
 ├── api/                # API Route definitions and navigation logic.
-├── middlewares/        # Guards for logging, security, and global errors.
+├── middlewares/        # Guards for logging, security, global errors, and HTTPS Redirect.
 └── __init__.py         # HTTP module initialization.
 ```
 
@@ -66,4 +66,4 @@ http/
 
 ### 🏛️ Practical Examples
 - **API**: Refer to [api/v1/router.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/api/v1/router.py).
-- **Middleware**: [logging_middleware.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/logging_middleware.py).
+- **Middleware**: [logging_middleware.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/logging_middleware.py) and [redirect.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/http/middlewares/redirect.py) for HTTPS enforcement.

@@ -67,3 +67,63 @@ interface/
 
 ### 🏛️ Practical Examples
 - **Protocols**: Refer to [protocols/repositories.py](file:///home/korosaki-ryukai/Workspace/Service/base_service/src/interface/protocols/repositories.py).
+
+---
+
+## 🚀 Mở rộng: gRPC & HTTPS Strategy
+
+Tầng Ngoài (External): Mobile/Web <--> REST/JSON <--> API Gateway.
+Tầng Trong (Internal): API Gateway <--> gRPC <--> Chatbot Service <--> gRPC <--> Embedding Service.
+
+### Bảng tổng hợp quyết định
+| Kịch bản | Giao thức khuyên dùng | Lý do |
+| :--- | :--- | :--- |
+| Frontend gọi Backend | REST / GraphQL | Dễ tương thích, dễ debug. |
+| Chatbot gọi Embedding | gRPC | Tốc độ cao, dữ liệu vector gọn nhẹ. |
+| Service gọi Broker (Kafka/RabbitMQ) | Messaging (Events) | Bất đồng bộ, tăng khả năng chịu lỗi. |
+| Tải file lớn(Ảnh, Âm thanh,.. )/Dữ liệu nhị phân | gRPC | Tối ưu hóa băng thông nhờ HTTP/2. |
+
+### 🔒 HTTPS là gì?
+HTTPS (HyperText Protocol Secure) là phiên bản bảo mật của HTTP. Nó sử dụng giao thức TLS (Transport Layer Security) — trước đây gọi là SSL — để mã hóa toàn bộ dữ liệu truyền tải giữa Client (Trình duyệt/Chatbot) và Server.
+Mục tiêu của nó là đảm bảo 3 yếu tố mà một người cầu toàn như bạn chắc chắn sẽ quan tâm:
+- **Encryption (Mã hóa)**: Người ngoài không thể "đọc trộm" dữ liệu (như nội dung chat hay API key).
+- **Data Integrity (Toàn vẹn dữ liệu)**: Dữ liệu không bị chỉnh sửa trên đường truyền mà bạn không biết.
+- **Authentication (Xác thực)**: Đảm bảo bạn đang kết nối đúng server thật chứ không phải một server giả mạo.
+
+### 2. So sánh HTTP vs HTTPS
+| Đặc điểm | HTTP | HTTPS |
+| :--- | :--- | :--- |
+| Cổng kết nối (Port) | 80 | 443 |
+| Bảo mật | Không mã hóa (Plain text) | Có mã hóa (Encrypted) |
+| Chứng chỉ | Không cần | Cần chứng chỉ SSL/TLS |
+| Tốc độ | Nhanh hơn một chút (lý thuyết) | Chậm hơn một chút (bắt tay mã hóa) |
+
+### 3. Cách HTTPS hoạt động (The Handshake)
+Trước khi dữ liệu được gửi đi, Client và Server phải thực hiện một quy trình gọi là TLS Handshake.
+1. **Client Hello**: Client gửi các phiên bản TLS và thuật toán mã hóa mà nó hỗ trợ.
+2. **Server Hello & Certificate**: Server gửi lại chứng chỉ (Certificate) chứa Public Key.
+3. **Key Exchange**: Client kiểm tra chứng chỉ, sau đó tạo ra một "Session Key" bí mật, mã hóa nó bằng Public Key của Server và gửi đi.
+4. **Mã hóa đối xứng**: Từ lúc này, cả hai dùng Session Key đó để mã hóa mọi dữ liệu.
+
+### 4. HTTPS có thay thế được gRPC hay không?
+Thực tế, chúng không đối đầu nhau:
+- **HTTP/HTTPS**: Là phương thức truyền tải (Transport).
+- **gRPC**: Là cách định nghĩa hàm và dữ liệu (Framework).
+
+**Lưu ý quan trọng**: gRPC bắt buộc chạy trên HTTP/2. Và trong hầu hết các môi trường thực tế (như khi bạn gọi API qua internet), gRPC thường được bọc trong HTTPS để đảm bảo an toàn.
+Nói cách khác: **gRPC + TLS = Secure gRPC (chạy trên HTTPS)**.
+
+### 🛡️ Triển khai HTTPS (SSL Termination)
+
+Để chuyển đổi từ HTTP sang HTTPS, bạn có thể tiếp cận theo các cấp độ:
+
+#### 1. Sử dụng Reverse Proxy / Load Balancer (SSL Termination)
+Đây là cách chuyên nghiệp và phổ biến nhất trong Microservices. Bạn không cần cài đặt chứng chỉ cho từng service (Chatbot, Embedding), mà chỉ cần cài tại "cửa ngõ".
+- **Cơ chế**: Client gọi HTTPS đến Nginx/Envoy. Nginx giải mã (decrypt) rồi gửi HTTP bình thường vào các service nội bộ.
+- **Công cụ**: Nginx, HAProxy, Traefik, hoặc Envoy.
+- **Ưu điểm**: Giảm tải cho các service con, quản lý chứng chỉ tập trung tại một nơi.
+
+#### 2. Sử dụng Cloud API Gateway / CDN
+Nếu bạn triển khai dự án trên Cloud (AWS, Google Cloud, Azure):
+- **Cloud Load Balancer**: Tự động cấp chứng chỉ thông qua các dịch vụ như AWS Certificate Manager.
+- **Cloudflare**: Cung cấp "Flexible SSL" (Mã hóa từ người dùng đến Cloudflare).
